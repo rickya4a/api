@@ -59,7 +59,11 @@ let getToken = function (headers) {
 } */
 
 exports.tracking = function(req, res){
-  localStorage.getItem('Authorization')
+  let token = localStorage.getItem('Authorization');
+  if(!req.headers.authorization){
+    return res.status(401).json({ message: 'Ga boleh masuk'});
+  }
+  res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   request.query('select top 10 * from T_TRACKING_DO', function(err, rows){
     if(err) console.log(err)
@@ -68,6 +72,10 @@ exports.tracking = function(req, res){
 }
 
 exports.getDetail = function(req, res){
+  let token = localStorage.getItem('Authorization');
+  if(!req.headers.authorization){
+    return res.status(401).json({ message: 'Ga boleh masuk'});
+  }
   res.setHeader('Access-Control-Allow-Origin', '*');
   let NO_DO = req.params.NO_DO;
   let kurir = localStorage.getItem('kurir');
@@ -91,6 +99,10 @@ exports.getDetail = function(req, res){
 }
 
 exports.findTracking = function(req, res){
+  let token = localStorage.getItem('Authorization');
+  if(!req.headers.authorization){
+    return res.status(401).json({ message: 'Ga boleh masuk'});
+  }
   let NO_DO = req.params.NO_DO;
   console.log(NO_DO);
   const token = localStorage.getItem('Authorization');
@@ -137,6 +149,10 @@ exports.insertData = function(req, res){
 
 exports.findCourier = function(req, res){
   //post username and password from client side
+  let token = localStorage.getItem('Authorization');
+  if(!req.headers.authorization){
+    return res.status(401).json({ message: 'Ga boleh masuk'});
+  }
   let username = req.body.username;
   let password = req.body.password;
   console.log(username);
@@ -166,6 +182,10 @@ exports.findCourier = function(req, res){
 }
 
 exports.getTrackingKnetStockis = function(req, res){
+  let token = localStorage.getItem('Authorization');
+  if(!req.headers.authorization){
+    return res.status(401).json({ message: 'Ga boleh masuk'});
+  }
   res.setHeader('Access-Control-Allow-Origin', '*');
   let trcd = req.params.trcd;
   console.log(trcd);
@@ -179,14 +199,14 @@ exports.getTrackingKnetStockis = function(req, res){
                   LEFT OUTER JOIN klink_mlm2010.dbo.billivhdr c ON (b.registerno = c.applyto) \
                   LEFT OUTER JOIN klink_mlm2010.dbo.intrh d ON (c.trcd = d.applyto) \
                   LEFT OUTER JOIN klink_mlm2010.dbo.gdohdr e ON (d.GDO = e.trcd) \
-                  LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO f ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS) \
-                  LEFT OUTER JOIN klink_whm.dbo.T_DO g ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS) \
+                  LEFT OUTER JOIN klink_whm_testing.dbo.T_DETAIL_DO f ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS) \
+                  LEFT OUTER JOIN klink_whm_testing.dbo.T_DO g ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS) \
                   WHERE a.trcd = '"+trcd+"'", 
                 function (err, records) {
                   if (err) {
                     console.log(err)
                   } else if (records.recordset == '') { 
-                    res.send({ values: null, message: 'Data Not Found'})
+                    res.send({ header: null, tracking: null })
                   } else{ 
                     let id_do = records.recordset[0].ID_DO;
 
@@ -195,10 +215,10 @@ exports.getTrackingKnetStockis = function(req, res){
                                   if(err){
                                     console.log(err)
                                   } else if(rows.recordsets == ''){
-                                    res.send({ header: records.recordset, tracking: "Data tidak ditemukan"})
+                                    res.send({ header: records.recordset, tracking: null})
                                   }
                                   else {
-                                    res.json([records.recordset, rows.recordset])
+                                    res.json({ header: records.recordset, tracking: rows.recordset })
                                   }
               
                     })
@@ -207,23 +227,28 @@ exports.getTrackingKnetStockis = function(req, res){
 }
 
 exports.getTrackingKnetInv= function(req, res){
+  let token = localStorage.getItem('Authorization');
+  if(!req.headers.authorization){
+    return res.status(401).json({ message: 'Ga boleh masuk'});
+  }
   res.setHeader('Access-Control-Allow-Origin', '*');
   let invoiceno = req.params.invoiceno;
   console.log(invoiceno);
 
   request.query("SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd as cn_no, \
-                  d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, d.trcd \
+                  d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, d.trcd, e.fullnm \
                   FROM klink_whm_testing.dbo.T_DO a \
                   LEFT OUTER JOIN klink_whm_testing.dbo.T_DETAIL_DO b ON (a.ID_DO = b.ID_DO) \
                   LEFT OUTER JOIN klink_mlm2010.dbo.intrh c ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = c.applyto) \
                   LEFT OUTER JOIN klink_mlm2010.dbo.ordtrh d ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = d.receiptno) \
+                  LEFT OUTER JOIN klink_mlm2010.dbo.msmemb e ON (e.dfno = d.dfno) \
                   WHERE d.invoiceno = '"+invoiceno+"' \
-                  GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd", 
+                  GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, e.fullnm", 
                 function(err, records){
                   if (err) {
                     console.log(err)
                   } else if (records.recordset == '') { 
-                    res.send({ values: null, message: 'Data Not Found'})
+                    res.send({ header: null, tracking: null})
                   } else{ 
                     let id_do = records.recordset[0].ID_DO;
                     request.query("select NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY \
@@ -231,10 +256,10 @@ exports.getTrackingKnetInv= function(req, res){
                                   if(err){
                                     console.log(err)
                                   } else if(rows.recordsets == ''){
-                                    res.send({ header: records.recordset, tracking: "Data tidak ditemukan"})
+                                    res.send({ header: records.recordset, tracking: null})
                                   }
                                   else {
-                                    res.json([records.recordset, rows.recordset])
+                                    res.json({ header: records.recordset, tracking: rows.recordset })
                                   }
   
                     })
@@ -242,7 +267,62 @@ exports.getTrackingKnetInv= function(req, res){
   })
 }
 
+exports.getDataCourier = function(req, res){
+  let token = localStorage.getItem('Authorization');
+  if(!req.headers.authorization){
+    return res.status(401).json({ message: 'Ga boleh masuk'});
+  }
+  //post username and password from client side
+  let username = req.params.username;
+  console.log(username);
+  //set header auth
+  res.setHeader('Authorization', token);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  request.query("select a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE, a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI \
+                  from MASTER_COURIER a \
+                  INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID \
+                  where a.USERNAME = '"+username+"'", 
+                  function(err, rows){
+                    if(err) {
+                      console.log(err) 
+                    } else if(rows.recordset == '') {
+                      res.send({ values: null, message: 'User Not Found' })
+                    } else {
+                      res.json(rows.recordset)
+                    }
+                })
+}
 
+exports.updatePassCourier = function(req, res){
+  //post username and password from client side
+  let username = req.body.username;
+  let oldpassword = req.body.oldpassword;
+  let newpassword = req.body.newpassword;
+  
+  //set header auth
+  const token = localStorage.getItem('Authorization');
+  res.setHeader('Authorization', token);
+  
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  request.query("SELECT PASSWORD FROM MASTER_COURIER WHERE USERNAME = '"+username+"' AND PASSWORD = '"+oldpassword+"'", 
+                  function(err, rows){
+                    if(err) {
+                      console.log(err) 
+                    } else if(rows.recordset){
+                      request.query("UPDATE MASTER_COURIER SET PASSWORD = '"+newpassword+"' WHERE USERNAME = '"+username+"'", 
+                      function(err, records){
+                        if(err){
+                          console.log(err)
+                        } else {
+                          res.send({ message: 'Success update password' })
+                        }
+                      });
+                    }
+                })
+}
+
+
+// 
 
 
 

@@ -25,6 +25,11 @@ module.exports = function(app){
     .get(controller.getTrackingKnetStockis);
     
   app.route('/getTrackingKnetInv/:invoiceno')
-  .get(controller.getTrackingKnetInv);
+    .get(controller.getTrackingKnetInv);
+
+  app.route('/getDataCourier/:username')
+    .get(controller.getDataCourier);
     
+  app.route('/updatePassCourier')
+    .put(controller.updatePassCourier);
 }
