@@ -1,4 +1,4 @@
-const sql = require('mssql');
+const whm = require('mssql');
 // connection string param
 const config = {
     user: 'sa',
@@ -7,12 +7,12 @@ const config = {
     database: 'klink_whm_testing' 
   }
   
-sql.connect(config, function(err) {
+whm.connect(config, function(err) {
   if (err) 
     console.log(err);
-    console.log("Success connect to db");
+    console.log("Success connect to db klink_whm_testing");
 })
 
-module.exports = sql;
+module.exports = whm;
 
   

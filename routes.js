@@ -2,6 +2,7 @@ module.exports = function(app){
   // import controller di sini
   const tracking = require('./controller/tracking');
   const pinaple = require('./controller/importPinaple');
+  
 
   // route untuk api tracking
   app.route('/')
@@ -36,5 +37,9 @@ module.exports = function(app){
   
   app.route('/getListStk')
     .get(tracking.stockies);
+
+  // routes pinaple
+ /*  app.route('/selectDate')
+    .get(pinaple.selectDate); */
 
 }
