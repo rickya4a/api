@@ -13,6 +13,6 @@ sql.connect(config, function(err) {
     console.log("Success connect to db");
 })
 
-module.exports = whmTesting;
+module.exports = sql;
 
   
