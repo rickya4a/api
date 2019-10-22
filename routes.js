@@ -1,35 +1,40 @@
 module.exports = function(app){
-  const controller = require('./controller');
+  // import controller di sini
+  const tracking = require('./controller/tracking');
+  const pinaple = require('./controller/importPinaple');
 
-  // DO190703012
-
+  // route untuk api tracking
   app.route('/')
-    .get(controller.index);
+    .get(tracking.index);
 
   app.route('/tracking')
-    .get(controller.tracking);
+    .get(tracking.tracking);
 
   app.route('/tracking/:NO_DO')
-    .get(controller.getDetail);
+    .get(tracking.getDetail);
 
   app.route('/inputTracking')
-    .post(controller.insertData);
+    .post(tracking.insertData);
 
   app.route('/findTracking/:NO_DO')
-    .get(controller.findTracking);
+    .get(tracking.findTracking);
 
   app.route('/findCourier')
-    .post(controller.findCourier);
+    .post(tracking.findCourier);
 
   app.route('/getTrackingKnetStk/:trcd')
-    .get(controller.getTrackingKnetStockis);
+    .get(tracking.getTrackingKnetStockis);
     
   app.route('/getTrackingKnetInv/:invoiceno')
-    .get(controller.getTrackingKnetInv);
+    .get(tracking.getTrackingKnetInv);
 
   app.route('/getDataCourier/:username')
-    .get(controller.getDataCourier);
+    .get(tracking.getDataCourier);
     
   app.route('/updatePassCourier')
-    .put(controller.updatePassCourier);
+    .put(tracking.updatePassCourier);
+  
+  app.route('/getListStk')
+    .get(tracking.stockies);
+
 }
