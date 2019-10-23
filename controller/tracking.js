@@ -1,32 +1,26 @@
 const jwt = require('jsonwebtoken'),
-      localStorage = require('localStorage'),
-      whmTesting = require('../config/whmTesting');
+  localStorage = require('localStorage'),
+  { pool_whm, pool_mlm } = require('../config/db_config');
 
-const request = new whmTesting.Request();
-
-exports.index = function(req, res, err){ // urutan paramnya harus req, res
+exports.index = function(req, res, err) { // urutan paramnya harus req, res
   res.setHeader('Access-Control-Allow-Origin', '*');
-  if(err) console.log(err)
-  let data = {
-    status: true, 
-    msg: 'Anti JS!'
-  }
-  res.json(data)
+  return pool_mlm.then(pool => {
+    pool.request()
+      .query('SELECT TOP 10 * FROM bbhdr', (err, result) => {
+      if (err) throw err
+      res.json(result)
+    })
+  })
 }
 
 exports.tracking = function(req, res){
   res.setHeader('Access-Control-Allow-Origin', '*');
-  request.query('select ID_DO, NO_DO, STATUS, CONVERT(VARCHAR(30), TANGGAL, 20) AS TANGGAL, CREATED_BY from T_TRACKING_DO', function(err, rows){
-    if(err) { 
-      console.log(err)
-    } else {
-      let nama = { test: 'test' };
-      let token = jwt.sign(nama, config.password);
-      // set response header
-      res.setHeader('Authorization', `Bearer ${token}`); 
-      localStorage.setItem('Authorization', token)
-      res.json({ values: rows.recordset, token: token })
-    }
+  return pool_whm.then(pool => {
+    pool.request()
+      .query('SELECT TOP 10 ID_DO, NO_DO, STATUS, CONVERT(VARCHAR(30), TANGGAL, 20) AS TANGGAL, CREATED_BY FROM T_TRACKING_DO', (err, result) => {
+      if (err) throw err
+      res.json(result)
+    })
   })
 }
 
@@ -47,13 +41,13 @@ exports.getDetail = function(req, res){
     left join MASTER_WAREHOUSE d on a.ID_WAREHOUSE = d.ID_WAREHOUSE \
     WHERE a.NO_DO = '"+NO_DO+"' AND a.ID_COURIER = '"+kurir+"'; \
     select NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY \
-    from T_TRACKING_DO where NO_DO = '"+NO_DO+"' ORDER BY CREATED_DATE DESC", 
+    from T_TRACKING_DO where NO_DO = '"+NO_DO+"' ORDER BY CREATED_DATE DESC",
     function(err, rows){
       if(err) {
         console.log(err)
-      } else if(rows.recordset == '') { 
+      } else if(rows.recordset == '') {
         res.send({ values: null, message: 'Data Not Found'})
-      } else{ 
+      } else{
         res.json(rows.recordsets)
       }
     })
@@ -65,16 +59,15 @@ exports.findTracking = function(req, res){
   if(!req.headers.authorization){
     return res.status(401).json({ message: 'Ga boleh masuk'});
   }
-
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   request.query("select NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY from T_TRACKING_DO where NO_DO = '"+NO_DO+"'", function(err, rows){
     if(err) {
       console.log(err)
     } else if(rows.recordset == '') {
-      // res.status(204); 
+      // res.status(204);
       res.send({ values: null, message: 'Data Not Found'})
-    } else{ 
+    } else{
       res.json(rows.recordset)
     }
   })
@@ -106,7 +99,7 @@ exports.insertData = function(req, res){
                       console.log(error)
                       console.log(req.body)
                     }else{
-                      // res.json(rows) 
+                      // res.json(rows)
                       res.send({ message: 'Success insert new record' })
                     }
                   })
@@ -120,10 +113,10 @@ exports.findCourier = function(req, res){
   res.setHeader('Access-Control-Allow-Origin', '*');
   request.query("select ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME \
                   from MASTER_COURIER \
-                  where USERNAME = '"+username+"' AND PASSWORD = '"+password+"'", 
+                  where USERNAME = '"+username+"' AND PASSWORD = '"+password+"'",
                   function(err, rows){
                     if(err) {
-                      console.log(err) 
+                      console.log(err)
                     } else if(rows.recordset == '') {
                       res.send({ values: null, message: 'User Not Found' })
                     } else {
@@ -148,7 +141,7 @@ exports.getTrackingKnetStockis = function(req, res){
   res.setHeader('Authorization', `Bearer ${token}`); */
   res.setHeader('Access-Control-Allow-Origin', '*');
   let trcd = req.params.trcd;
-  
+
   request.query("SELECT  TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt, CONVERT(VARCHAR(10), a.batchdt, 120) as batchdt, \
                     a.createdt, a.createnm, a.dfno, a.distnm, a.loccd, a.loccdnm, a.tdp, a.tbv, a.bnsperiod, b.createnm as cnms_createnm, \
                     CONVERT(VARCHAR(10), b.createdt, 120) as cnms_createdt, b.receiptno, c.createdt as kw_date, c.createnm as kw_createnm, \
@@ -160,13 +153,13 @@ exports.getTrackingKnetStockis = function(req, res){
                   LEFT OUTER JOIN klink_mlm2010.dbo.gdohdr e ON (d.GDO = e.trcd) \
                   LEFT OUTER JOIN klink_whm_testing.dbo.T_DETAIL_DO f ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS) \
                   LEFT OUTER JOIN klink_whm_testing.dbo.T_DO g ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS) \
-                  WHERE a.trcd = '"+trcd+"'", 
+                  WHERE a.trcd = '"+trcd+"'",
                 function (err, records) {
                   if (err) {
                     console.log(err)
-                  } else if (records.recordset == '') { 
+                  } else if (records.recordset == '') {
                     res.send({ header: null, tracking: null })
-                  } else{ 
+                  } else{
                     let id_do = records.recordset[0].ID_DO;
 
                     request.query("select NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY \
@@ -179,7 +172,7 @@ exports.getTrackingKnetStockis = function(req, res){
                                   else {
                                     res.json({ header: records.recordset, tracking: rows.recordset })
                                   }
-              
+
                     })
                   }
               })
@@ -203,13 +196,13 @@ exports.getTrackingKnetInv= function(req, res){
                   LEFT OUTER JOIN klink_mlm2010.dbo.ordtrh d ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = d.receiptno) \
                   LEFT OUTER JOIN klink_mlm2010.dbo.msmemb e ON (e.dfno = d.dfno) \
                   WHERE d.invoiceno = '"+invoiceno+"' \
-                  GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, e.fullnm", 
+                  GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, e.fullnm",
                 function(err, records){
                   if (err) {
                     console.log(err)
-                  } else if (records.recordset == '') { 
+                  } else if (records.recordset == '') {
                     res.send({ header: null, tracking: null})
-                  } else{ 
+                  } else{
                     let id_do = records.recordset[0].ID_DO;
                     request.query("select NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY \
                                       from T_TRACKING_DO where ID_DO = '"+id_do+"' ORDER BY CREATED_DATE DESC", function(err, rows){
@@ -221,7 +214,7 @@ exports.getTrackingKnetInv= function(req, res){
                                   else {
                                     res.json({ header: records.recordset, tracking: rows.recordset })
                                   }
-  
+
                     })
                   }
   })
@@ -239,10 +232,10 @@ exports.getDataCourier = function(req, res){
   request.query("select a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE, a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI \
                   from MASTER_COURIER a \
                   INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID \
-                  where a.USERNAME = '"+username+"'", 
+                  where a.USERNAME = '"+username+"'",
                   function(err, rows){
                     if(err) {
-                      console.log(err) 
+                      console.log(err)
                     } else if(rows.recordset == '') {
                       res.send({ values: null, message: 'User Not Found' })
                     } else {
@@ -256,7 +249,7 @@ exports.updatePassCourier = function(req, res){
   let username = req.body.username;
   let oldpassword = req.body.oldpassword;
   let newpassword = req.body.newpassword;
-  
+
   //set header auth
   /* const token = localStorage.getItem('Authorization');
   if(!req.headers.authorization){
@@ -264,12 +257,12 @@ exports.updatePassCourier = function(req, res){
   }
   res.setHeader('Authorization', `Bearer ${token}`); */
   res.setHeader('Access-Control-Allow-Origin', '*');
-  request.query("SELECT PASSWORD FROM MASTER_COURIER WHERE USERNAME = '"+username+"' AND PASSWORD = '"+oldpassword+"'", 
+  request.query("SELECT PASSWORD FROM MASTER_COURIER WHERE USERNAME = '"+username+"' AND PASSWORD = '"+oldpassword+"'",
                   function(err, rows){
                     if(err) {
-                      console.log(err) 
+                      console.log(err)
                     } else if(rows.recordset){
-                      request.query("UPDATE MASTER_COURIER SET PASSWORD = '"+newpassword+"' WHERE USERNAME = '"+username+"'", 
+                      request.query("UPDATE MASTER_COURIER SET PASSWORD = '"+newpassword+"' WHERE USERNAME = '"+username+"'",
                       function(err, records){
                         if(err){
                           console.log(err)
@@ -285,10 +278,10 @@ exports.updatePassCourier = function(req, res){
 exports.stockies = function(req, res){
   res.setHeader('Access-Control-Allow-Origin', '*');
   request.query("SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES FROM klink_whm_testing.dbo.MASTER_STOCKIES WHERE IS_ACTIVE = 0 \
-                  ORDER BY NAMA_STOCKIES ASC", 
+                  ORDER BY NAMA_STOCKIES ASC",
             function(err, rows) {
               if(err) {
-                console.log(err) 
+                console.log(err)
               } else if(rows.recordset == '') {
                 res.send({ values: null, message: 'Stockies not found' })
               } else {

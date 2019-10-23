@@ -1,8 +1,8 @@
 module.exports = function(app){
   // import controller di sini
   const tracking = require('./controller/tracking');
-  const pinaple = require('./controller/importPinaple');
-  
+  const pineapple = require('./controller/importPineapple');
+
 
   // route untuk api tracking
   app.route('/')
@@ -25,21 +25,23 @@ module.exports = function(app){
 
   app.route('/getTrackingKnetStk/:trcd')
     .get(tracking.getTrackingKnetStockis);
-    
+
   app.route('/getTrackingKnetInv/:invoiceno')
     .get(tracking.getTrackingKnetInv);
 
   app.route('/getDataCourier/:username')
     .get(tracking.getDataCourier);
-    
+
   app.route('/updatePassCourier')
     .put(tracking.updatePassCourier);
-  
+
   app.route('/getListStk')
     .get(tracking.stockies);
 
-  // routes pinaple
- /*  app.route('/selectDate')
-    .get(pinaple.selectDate); */
+  // routes pineapple
+  app.route('/selectDate')
+    .get(pineapple.selectDate);
 
+  app.route('/bbhdr')
+    .get(pineapple.bbhdr);
 }
