@@ -1,6 +1,14 @@
 const { pool_mlm } = require('../config/db_config')
 
-exports.selectDate = function (req, res) {
+/**
+ * Get data date from database
+ *
+ * @param   {mixed}  req  request body
+ * @param   {mixed}  res  http response
+ *
+ * @return  {array}
+ */
+exports.selectDate = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   let tglawal = req.body.tglawal;
   let tglakhir = req.body.tglakhir;
@@ -13,7 +21,7 @@ exports.selectDate = function (req, res) {
   })
 }
 
-exports.bbhdr = function(req, res, next) { // urutan paramnya harus req, res
+exports.bbhdr = function(req, res, next) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_mlm.then(pool => {
     pool.request()

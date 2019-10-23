@@ -1,10 +1,11 @@
-module.exports = function(app){
-  // import controller di sini
+module.exports = function(app) {
+
+  // ---- all controllers here ---- //
   const tracking = require('./controller/tracking');
   const pineapple = require('./controller/importPineapple');
+  // ---- end controllers here ---- //
 
-
-  // route untuk api tracking
+  // routes tracking
   app.route('/')
     .get(tracking.index);
 

@@ -13,7 +13,7 @@ exports.index = function(req, res, err) { // urutan paramnya harus req, res
   })
 }
 
-exports.tracking = function(req, res){
+exports.tracking = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
     pool.request()
@@ -24,7 +24,7 @@ exports.tracking = function(req, res){
   })
 }
 
-exports.getDetail = function(req, res){
+exports.getDetail = function(req, res) {
   let token = localStorage.getItem('Authorization');
   if(!req.headers.authorization){
     return res.status(401).json({ message: 'Ga boleh masuk'});
@@ -53,7 +53,7 @@ exports.getDetail = function(req, res){
     })
 }
 
-exports.findTracking = function(req, res){
+exports.findTracking = function(req, res) {
   let token = localStorage.getItem('Authorization');
   let NO_DO = req.params.NO_DO;
   if(!req.headers.authorization){
@@ -73,7 +73,7 @@ exports.findTracking = function(req, res){
   })
 }
 
-exports.insertData = function(req, res){
+exports.insertData = function(req, res) {
   let token = localStorage.getItem('Authorization');
   let NO_DO = req.params.NO_DO;
   if(!req.headers.authorization){
@@ -94,7 +94,7 @@ exports.insertData = function(req, res){
 
   request.query("insert into T_TRACKING_DO (ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE, CREATED_BY, ID_WAREHOUSE, ID_TRACKING) \
                   values ('"+id_do+"', '"+no_do+"', CONVERT(VARCHAR(30), '"+tanggal+"', 20), '"+status+"', CONVERT(VARCHAR(30), '"+created_date+"', 20), '"+created_by+"', '"+id_warehouse+"', '"+id_tracking+"')",
-                  function(error, rows, fields){
+                  function(error, rows, fields) {
                     if(error){
                       console.log(error)
                       console.log(req.body)
@@ -106,7 +106,7 @@ exports.insertData = function(req, res){
 
 }
 
-exports.findCourier = function(req, res){
+exports.findCourier = function(req, res) {
   let username = req.body.username;
   let password = req.body.password;
 
@@ -114,7 +114,7 @@ exports.findCourier = function(req, res){
   request.query("select ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME \
                   from MASTER_COURIER \
                   where USERNAME = '"+username+"' AND PASSWORD = '"+password+"'",
-                  function(err, rows){
+                  function(err, rows) {
                     if(err) {
                       console.log(err)
                     } else if(rows.recordset == '') {
@@ -133,7 +133,7 @@ exports.findCourier = function(req, res){
                 })
 }
 
-exports.getTrackingKnetStockis = function(req, res){
+exports.getTrackingKnetStockis = function(req, res) {
  /*  let token = localStorage.getItem('Authorization');
   if(!req.headers.authorization){
     return res.status(401).json({ message: 'Ga boleh masuk'});
@@ -154,7 +154,7 @@ exports.getTrackingKnetStockis = function(req, res){
                   LEFT OUTER JOIN klink_whm_testing.dbo.T_DETAIL_DO f ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS) \
                   LEFT OUTER JOIN klink_whm_testing.dbo.T_DO g ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS) \
                   WHERE a.trcd = '"+trcd+"'",
-                function (err, records) {
+                function(err, records) {
                   if (err) {
                     console.log(err)
                   } else if (records.recordset == '') {
@@ -178,16 +178,9 @@ exports.getTrackingKnetStockis = function(req, res){
               })
 }
 
-exports.getTrackingKnetInv= function(req, res){
- /*  let token = localStorage.getItem('Authorization');
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
-  res.setHeader('Authorization', `Bearer ${token}`); */
+exports.getTrackingKnetInv = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   let invoiceno = req.params.invoiceno;
-  console.log(invoiceno);
-
   request.query("SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd as cn_no, \
                   d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, d.trcd, e.fullnm \
                   FROM klink_whm_testing.dbo.T_DO a \
@@ -197,7 +190,7 @@ exports.getTrackingKnetInv= function(req, res){
                   LEFT OUTER JOIN klink_mlm2010.dbo.msmemb e ON (e.dfno = d.dfno) \
                   WHERE d.invoiceno = '"+invoiceno+"' \
                   GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, e.fullnm",
-                function(err, records){
+                function(err, records) {
                   if (err) {
                     console.log(err)
                   } else if (records.recordset == '') {
@@ -206,12 +199,11 @@ exports.getTrackingKnetInv= function(req, res){
                     let id_do = records.recordset[0].ID_DO;
                     request.query("select NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY \
                                       from T_TRACKING_DO where ID_DO = '"+id_do+"' ORDER BY CREATED_DATE DESC", function(err, rows){
-                                  if(err){
+                                  if(err) {
                                     console.log(err)
-                                  } else if(rows.recordsets == ''){
+                                  } else if(rows.recordsets == '') {
                                     res.send({ header: records.recordset, tracking: null})
-                                  }
-                                  else {
+                                  } else {
                                     res.json({ header: records.recordset, tracking: rows.recordset })
                                   }
 
@@ -220,7 +212,7 @@ exports.getTrackingKnetInv= function(req, res){
   })
 }
 
-exports.getDataCourier = function(req, res){
+exports.getDataCourier = function(req, res) {
   let token = localStorage.getItem('Authorization');
   if(!req.headers.authorization){
     return res.status(401).json({ message: 'Ga boleh masuk'});
@@ -244,27 +236,22 @@ exports.getDataCourier = function(req, res){
                 })
 }
 
-exports.updatePassCourier = function(req, res){
+exports.updatePassCourier = function(req, res) {
   //post username and password from client side
   let username = req.body.username;
   let oldpassword = req.body.oldpassword;
   let newpassword = req.body.newpassword;
 
   //set header auth
-  /* const token = localStorage.getItem('Authorization');
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
-  res.setHeader('Authorization', `Bearer ${token}`); */
   res.setHeader('Access-Control-Allow-Origin', '*');
   request.query("SELECT PASSWORD FROM MASTER_COURIER WHERE USERNAME = '"+username+"' AND PASSWORD = '"+oldpassword+"'",
-                  function(err, rows){
+                  function(err, rows) {
                     if(err) {
                       console.log(err)
                     } else if(rows.recordset){
                       request.query("UPDATE MASTER_COURIER SET PASSWORD = '"+newpassword+"' WHERE USERNAME = '"+username+"'",
-                      function(err, records){
-                        if(err){
+                      function(err, records) {
+                        if(err) {
                           console.log(err)
                         } else {
                           res.send({ message: 'Success update password' })
@@ -275,7 +262,7 @@ exports.updatePassCourier = function(req, res){
 }
 
 // get list stockies for form do manual wms (testing)
-exports.stockies = function(req, res){
+exports.stockies = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   request.query("SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES FROM klink_whm_testing.dbo.MASTER_STOCKIES WHERE IS_ACTIVE = 0 \
                   ORDER BY NAMA_STOCKIES ASC",

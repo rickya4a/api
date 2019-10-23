@@ -1,5 +1,8 @@
+/**
+ * Global connection pool to connect every single
+ * database
+ */
 const sql = require('mssql');
-const mysql = require('mysql')
 
 const config_whm = {
   user: 'sa',
