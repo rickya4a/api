@@ -41,7 +41,7 @@ module.exports = function(app) {
 
   // routes pineapple
   app.route('/selectDate')
-    .get(pineapple.selectDate);
+    .post(pineapple.selectDate);
 
   app.route('/bbhdr')
     .get(pineapple.bbhdr);

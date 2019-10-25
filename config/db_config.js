@@ -8,7 +8,7 @@ const config_whm = {
   user: 'sa',
   password: 'QwertY@123',
   server: '192.168.22.3',
-  database: 'klink_whm_testing'
+  database: 'klink_whm'
 };
 const config_mlm = {
   user: 'sa',

@@ -14,7 +14,7 @@ exports.selectDate = function(req, res) {
   let tglakhir = req.body.tglakhir;
   return pool_mlm.then(pool => {
     pool.request()
-      .query(`SELECT createdt FROM getpinaple WHERE createdt BETWEEN ${tglawal} AND ${tglakhir} GROUP BY createdt`, (err, result) => {
+      .query(`SELECT createdt FROM getpinaple WHERE createdt BETWEEN '${tglawal}' AND '${tglakhir}' GROUP BY createdt`, (err, result) => {
       if (err) throw err
       res.json(result)
     })
