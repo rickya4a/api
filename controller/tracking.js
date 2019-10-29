@@ -268,6 +268,29 @@ exports.stockies = function(req, res) {
   })
 }
 
+// get list DO where ID_STOCKIES AND TANGGAL_DO
+exports.listDO = function(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  
+  let id_stockies = req.body.id_stockies;
+  let tgl_awal = req.body.tgl_awal;
+  let tgl_akhir = req.body.tgl_akhir; 
+  let ekspedisi = req.body.ekspedisi;
+
+  pool_whm.then(pool => {
+    pool.request()
+      .query(`SELECT ID_DO, NO_DO, NAMA, NO_RESI,TANGGAL_DO
+              FROM T_DO 
+              WHERE ID_STOCKIES = '${id_stockies}' AND ID_COURIER = '${ekspedisi}' AND IS_FAILED = '0'
+              AND CREATED_DATE BETWEEN '${tgl_awal}' AND '${tgl_akhir}'`, (err, result) => {
+              if (err) throw err
+              res.json(result.recordset)
+      })
+  })
+}
+
+
+
 
 
 
