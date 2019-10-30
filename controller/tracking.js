@@ -110,7 +110,7 @@ exports.findCourier = function(req, res) {
   pool_whm.then(pool => {
     pool.request()
     .query(`SELECT ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME \
-            FROM MASTER_COURIER \
+            FROM klink_whm_testing.dbo.MASTER_COURIER \
             WHERE USERNAME = '${username}' AND PASSWORD = '${password}'`, (err, result) => {
       if (err) {
         throw err
@@ -120,7 +120,7 @@ exports.findCourier = function(req, res) {
         let nama = { name: result.recordset[0].NAME }
         let kurir = result.recordset[0].PARENT_COURIER;
         let username = result.recordset[0].USERNAME;
-        const token = jwt.sign(nama, config.password);
+        const token = jwt.sign(nama, password);
         res.setHeader('Authorization', token)
         localStorage.setItem('Authorization', token)
         localStorage.setItem('kurir', kurir)
