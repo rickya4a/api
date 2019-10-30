@@ -40,7 +40,7 @@ module.exports = function(app) {
     .get(tracking.stockies);
 
   app.route('/listDO')
-    .get(tracking.listDO);
+    .post(tracking.listDO);
 
   // routes pineapple
   app.route('/selectDate')

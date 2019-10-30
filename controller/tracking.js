@@ -97,7 +97,7 @@ exports.insertData = function(req, res) {
     .query(`INSERT INTO T_TRACKING_DO (ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE, CREATED_BY, ID_WAREHOUSE, ID_TRACKING) \
       VALUES ('${id_do}', '${no_do}', CONVERT(VARCHAR(30), '${tanggal}', 20), '${status}', CONVERT(VARCHAR(30), '${created_date}', 20), '${created_by}', '${id_warehouse}', '${id_tracking}')`, (err, result) => {
       if (err) throw err
-      res.send({ message: 'Success insert new password' })
+      res.send({ message: 'Success insert data' })
     })
   })
 }
@@ -271,16 +271,16 @@ exports.stockies = function(req, res) {
 // get list DO where ID_STOCKIES AND TANGGAL_DO
 exports.listDO = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  
+
   let id_stockies = req.body.id_stockies;
   let tgl_awal = req.body.tgl_awal;
-  let tgl_akhir = req.body.tgl_akhir; 
+  let tgl_akhir = req.body.tgl_akhir;
   let ekspedisi = req.body.ekspedisi;
 
   pool_whm.then(pool => {
     pool.request()
       .query(`SELECT ID_DO, NO_DO, NAMA, NO_RESI,TANGGAL_DO
-              FROM T_DO 
+              FROM T_DO
               WHERE ID_STOCKIES = '${id_stockies}' AND ID_COURIER = '${ekspedisi}' AND IS_FAILED = '0'
               AND CREATED_DATE BETWEEN '${tgl_awal}' AND '${tgl_akhir}'`, (err, result) => {
               if (err) throw err
