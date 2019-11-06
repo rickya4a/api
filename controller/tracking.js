@@ -24,7 +24,7 @@ exports.tracking = function(req, res) {
   })
 }
 
-exports.getDetail = function(req, res) {
+exports.getDetail = (req, res) => {
   let token = localStorage.getItem('Authorization');
   if(!req.headers.authorization){
     return res.status(401).json({ message: 'Ga boleh masuk'});
@@ -42,7 +42,7 @@ exports.getDetail = function(req, res) {
     LEFT JOIN MASTER_STOCKIES c on a.ID_STOCKIES = c.ID_STOCKIES
     LEFT JOIN MASTER_WAREHOUSE d on a.ID_WAREHOUSE = d.ID_WAREHOUSE
     WHERE a.NO_DO = '${no_do}' AND a.ID_COURIER = '${kurir}';
-    SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
+    SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY, BERAT, KOLI
     FROM T_TRACKING_DO WHERE NO_DO = '${no_do}' ORDER BY CREATED_DATE DESC`, (err, result) => {
         if (err) {
           throw err
@@ -55,7 +55,7 @@ exports.getDetail = function(req, res) {
   })
 }
 
-exports.findTracking = function(req, res) {
+exports.findTracking = (req, res) => {
   let token = localStorage.getItem('Authorization');
   let no_do = req.params.NO_DO;
   if(!req.headers.authorization){
@@ -78,7 +78,7 @@ exports.findTracking = function(req, res) {
   })
 }
 
-exports.insertData = function(req, res) {
+exports.insertData = (req, res) => {
   let token = localStorage.getItem('Authorization');
   if (!req.headers.authorization) {
     return res.status(401).json({ message: 'Ga boleh masuk'});
@@ -109,7 +109,7 @@ exports.insertData = function(req, res) {
   })
 }
 
-exports.findCourier = function(req, res) {
+exports.findCourier = (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
 
@@ -138,7 +138,7 @@ exports.findCourier = function(req, res) {
   })
 }
 
-exports.getTrackingKnetStockis = function(req, res) {
+exports.getTrackingKnetStockis = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   let trcd = req.params.trcd;
 
@@ -180,7 +180,7 @@ exports.getTrackingKnetStockis = function(req, res) {
   })
 }
 
-exports.getTrackingKnetInv = function(req, res) {
+exports.getTrackingKnetInv = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   let invoiceno = req.params.invoiceno;
   pool_whm.then(pool => {
@@ -216,7 +216,7 @@ exports.getTrackingKnetInv = function(req, res) {
   })
 }
 
-exports.getDataCourier = function(req, res) {
+exports.getDataCourier = (req, res) => {
   let token = localStorage.getItem('Authorization');
   if(!req.headers.authorization){
     return res.status(401).json({ message: 'Ga boleh masuk'});
@@ -242,7 +242,7 @@ exports.getDataCourier = function(req, res) {
   })
 }
 
-exports.updatePassCourier = function(req, res) {
+exports.updatePassCourier = (req, res) => {
   //post username and password from client side
   let username = req.body.username;
   let oldpassword = req.body.oldpassword;
@@ -263,7 +263,7 @@ exports.updatePassCourier = function(req, res) {
 }
 
 // get list stockies for form do manual wms (testing)
-exports.stockies = function(req, res) {
+exports.stockies = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
     pool.request()
@@ -277,7 +277,7 @@ exports.stockies = function(req, res) {
 
 // get list DO where ID_STOCKIES AND TANGGAL_DO
 // I love you
-exports.listDO = function(req, res) {
+exports.listDO = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   let id_stockies = req.body.id_stockies;
