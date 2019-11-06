@@ -36,13 +36,13 @@ exports.getDetail = function(req, res) {
   pool_whm.then(pool => {
     pool.request()
     .query(`SELECT a.ID_DO, a.NO_DO, a.ID_COURIER, a.ID_STOCKIES, a.NAMA, a.ALAMAT1, a.ID_WAREHOUSE, a.NO_RESI,
-    b.NAMA, c.NAMA_STOCKIES, c.CODE_STOCKIES, d.WAREHOUSE_NAME 
-    FROM T_DO a 
-    LEFT JOIN COURIER b on a.ID_COURIER = b.ID 
-    LEFT JOIN MASTER_STOCKIES c on a.ID_STOCKIES = c.ID_STOCKIES 
+    b.NAMA, c.NAMA_STOCKIES, c.CODE_STOCKIES, d.WAREHOUSE_NAME
+    FROM T_DO a
+    LEFT JOIN COURIER b on a.ID_COURIER = b.ID
+    LEFT JOIN MASTER_STOCKIES c on a.ID_STOCKIES = c.ID_STOCKIES
     LEFT JOIN MASTER_WAREHOUSE d on a.ID_WAREHOUSE = d.ID_WAREHOUSE
-    WHERE a.NO_DO = '${no_do}' AND a.ID_COURIER = '${kurir}'; 
-    SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY 
+    WHERE a.NO_DO = '${no_do}' AND a.ID_COURIER = '${kurir}';
+    SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
     FROM T_TRACKING_DO WHERE NO_DO = '${no_do}' ORDER BY CREATED_DATE DESC`, (err, result) => {
         if (err) {
           throw err
@@ -65,7 +65,7 @@ exports.findTracking = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()
-      .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, 
+      .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE,
       CREATED_BY from T_TRACKING_DO WHERE NO_DO = '${no_do}'`, (err, result) => {
         if (err) {
           throw err
@@ -100,8 +100,8 @@ exports.insertData = function(req, res) {
 
   pool_whm.then(pool => {
     pool.request()
-    .query(`INSERT INTO T_TRACKING_DO (ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE, CREATED_BY, ID_WAREHOUSE, ID_TRACKING, BERAT, KOLI) 
-      VALUES ('${id_do}', '${no_do}', CONVERT(VARCHAR(30), '${tanggal}', 20), '${status}', CONVERT(VARCHAR(30), '${created_date}', 20), 
+    .query(`INSERT INTO T_TRACKING_DO (ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE, CREATED_BY, ID_WAREHOUSE, ID_TRACKING, BERAT, KOLI)
+      VALUES ('${id_do}', '${no_do}', CONVERT(VARCHAR(30), '${tanggal}', 20), '${status}', CONVERT(VARCHAR(30), '${created_date}', 20),
       '${created_by}', '${id_warehouse}', '${id_tracking}', '${berat}', '${koli}')`, (err, result) => {
       if (err) throw err
       res.send({ message: 'Success insert data' })
@@ -116,8 +116,8 @@ exports.findCourier = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME 
-            FROM MASTER_COURIER 
+    .query(`SELECT ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME
+            FROM MASTER_COURIER
             WHERE USERNAME = '${username}' AND PASSWORD = '${password}'`, (err, result) => {
       if (err) {
         throw err
@@ -144,17 +144,17 @@ exports.getTrackingKnetStockis = function(req, res) {
 
   pool_mlm.then(pool => {
     pool.request()
-    .query(`SELECT TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt, CONVERT(VARCHAR(10), a.batchdt, 120) as batchdt, 
-              a.createdt, a.createnm, a.dfno, a.distnm, a.loccd, a.loccdnm, a.tdp, a.tbv, a.bnsperiod, b.createnm as cnms_createnm, 
-              CONVERT(VARCHAR(10), b.createdt, 120) as cnms_createdt, b.receiptno, c.createdt as kw_date, c.createnm as kw_createnm, 
-              d.GDO, e.createnm as gdo_createnm, CONVERT(VARCHAR(10), e.etdt, 120) as gdo_createdt, e.shipto, f.ID_DO, g.NO_DO 
-            FROM klink_mlm2010.dbo.V_HILAL_CHECK_BV_ONLINE_HDR a 
-            LEFT OUTER JOIN klink_mlm2010.dbo.ordivtrh b ON (a.invoiceno = b.invoiceno) 
-            LEFT OUTER JOIN klink_mlm2010.dbo.billivhdr c ON (b.registerno = c.applyto) 
-            LEFT OUTER JOIN klink_mlm2010.dbo.intrh d ON (c.trcd = d.applyto) 
-            LEFT OUTER JOIN klink_mlm2010.dbo.gdohdr e ON (d.GDO = e.trcd) 
-            LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO f ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS) 
-            LEFT OUTER JOIN klink_whm.dbo.T_DO g ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS) 
+    .query(`SELECT TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt, CONVERT(VARCHAR(10), a.batchdt, 120) as batchdt,
+              a.createdt, a.createnm, a.dfno, a.distnm, a.loccd, a.loccdnm, a.tdp, a.tbv, a.bnsperiod, b.createnm as cnms_createnm,
+              CONVERT(VARCHAR(10), b.createdt, 120) as cnms_createdt, b.receiptno, c.createdt as kw_date, c.createnm as kw_createnm,
+              d.GDO, e.createnm as gdo_createnm, CONVERT(VARCHAR(10), e.etdt, 120) as gdo_createdt, e.shipto, f.ID_DO, g.NO_DO
+            FROM klink_mlm2010.dbo.V_HILAL_CHECK_BV_ONLINE_HDR a
+            LEFT OUTER JOIN klink_mlm2010.dbo.ordivtrh b ON (a.invoiceno = b.invoiceno)
+            LEFT OUTER JOIN klink_mlm2010.dbo.billivhdr c ON (b.registerno = c.applyto)
+            LEFT OUTER JOIN klink_mlm2010.dbo.intrh d ON (c.trcd = d.applyto)
+            LEFT OUTER JOIN klink_mlm2010.dbo.gdohdr e ON (d.GDO = e.trcd)
+            LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO f ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS)
+            LEFT OUTER JOIN klink_whm.dbo.T_DO g ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS)
             WHERE a.trcd = '${trcd}'`, (err, result) => {
       if (err) {
         throw err
@@ -164,7 +164,7 @@ exports.getTrackingKnetStockis = function(req, res) {
         let id_do = result.recordset[0].ID_DO;
         pool_whm.then(pool => {
           pool.request()
-          .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY 
+          .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
                   FROM T_TRACKING_DO where ID_DO = '${id_do}' ORDER BY CREATED_DATE DESC`, (err, result) => {
             if (err) {
               throw err
@@ -185,14 +185,14 @@ exports.getTrackingKnetInv = function(req, res) {
   let invoiceno = req.params.invoiceno;
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd as cn_no, 
-            d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, d.trcd, e.fullnm 
-            FROM klink_whm.dbo.T_DO a 
-            LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO b ON (a.ID_DO = b.ID_DO) 
-            LEFT OUTER JOIN klink_mlm2010.dbo.intrh c ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = c.applyto) 
-            LEFT OUTER JOIN klink_mlm2010.dbo.ordtrh d ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = d.receiptno) 
-            LEFT OUTER JOIN klink_mlm2010.dbo.msmemb e ON (e.dfno = d.dfno) 
-            WHERE d.invoiceno = '${invoiceno}' 
+    .query(`SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd as cn_no,
+            d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, d.trcd, e.fullnm
+            FROM klink_whm.dbo.T_DO a
+            LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO b ON (a.ID_DO = b.ID_DO)
+            LEFT OUTER JOIN klink_mlm2010.dbo.intrh c ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = c.applyto)
+            LEFT OUTER JOIN klink_mlm2010.dbo.ordtrh d ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = d.receiptno)
+            LEFT OUTER JOIN klink_mlm2010.dbo.msmemb e ON (e.dfno = d.dfno)
+            WHERE d.invoiceno = '${invoiceno}'
             GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, e.fullnm`, (err, result) => {
       if (err) {
         throw err
@@ -201,7 +201,7 @@ exports.getTrackingKnetInv = function(req, res) {
       } else {
         let id_do = result.recordset[0].ID_DO;
         pool.request()
-        .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY 
+        .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
                 FROM T_TRACKING_DO where ID_DO = '${id_do}' ORDER BY CREATED_DATE DESC`, (err, result) => {
           if (err) {
             throw err
@@ -227,9 +227,9 @@ exports.getDataCourier = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE, a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI 
-            FROM MASTER_COURIER a 
-            INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID 
+    .query(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE, a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI
+            FROM MASTER_COURIER a
+            INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID
             WHERE a.USERNAME = '${username}'`, (err, result) => {
       if (err) {
         throw err
@@ -267,7 +267,7 @@ exports.stockies = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
     pool.request()
-      .query(`SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES FROM klink_whm.dbo.MASTER_STOCKIES WHERE IS_ACTIVE = 0 
+      .query(`SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES FROM klink_whm.dbo.MASTER_STOCKIES WHERE IS_ACTIVE = 0
       ORDER BY NAMA_STOCKIES ASC`, (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -276,6 +276,7 @@ exports.stockies = function(req, res) {
 }
 
 // get list DO where ID_STOCKIES AND TANGGAL_DO
+// I love you
 exports.listDO = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -287,7 +288,7 @@ exports.listDO = function(req, res) {
   pool_whm.then(pool => {
     pool.request()
       .query(`SELECT ID_DO, NO_DO, NAMA, NO_RESI,TANGGAL_DO
-              FROM klink_whm_testing.dbo.T_DO 
+              FROM klink_whm_testing.dbo.T_DO
               WHERE ID_STOCKIES = '${id_stockies}' AND ID_COURIER = '${ekspedisi}' AND IS_FAILED = '0'
               AND CREATED_DATE BETWEEN '${tgl_awal}' AND '${tgl_akhir}'`, (err, result) => {
               if (err) throw err
