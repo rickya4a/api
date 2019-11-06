@@ -104,7 +104,7 @@ exports.insertData = function(req, res) {
       VALUES ('${id_do}', '${no_do}', CONVERT(VARCHAR(30), '${tanggal}', 20), '${status}', CONVERT(VARCHAR(30), '${created_date}', 20), 
       '${created_by}', '${id_warehouse}', '${id_tracking}', '${berat}', '${koli}')`, (err, result) => {
       if (err) throw err
-      res.send({ message: 'Success insert new password' })
+      res.send({ message: 'Success insert data' })
     })
   })
 }
@@ -278,10 +278,10 @@ exports.stockies = function(req, res) {
 // get list DO where ID_STOCKIES AND TANGGAL_DO
 exports.listDO = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  
+
   let id_stockies = req.body.id_stockies;
   let tgl_awal = req.body.tgl_awal;
-  let tgl_akhir = req.body.tgl_akhir; 
+  let tgl_akhir = req.body.tgl_akhir;
   let ekspedisi = req.body.ekspedisi;
 
   pool_whm.then(pool => {
