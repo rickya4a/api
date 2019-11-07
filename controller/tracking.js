@@ -117,7 +117,7 @@ exports.findCourier = (req, res) => {
   pool_whm.then(pool => {
     pool.request()
     .query(`SELECT ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME
-            FROM MASTER_COURIER
+            FROM klink_whm_testing.dbo.MASTER_COURIER
             WHERE USERNAME = '${username}' AND PASSWORD = '${password}'`, (err, result) => {
       if (err) {
         throw err
@@ -127,7 +127,7 @@ exports.findCourier = (req, res) => {
         let nama = { name: result.recordset[0].NAME }
         let kurir = result.recordset[0].PARENT_COURIER;
         let username = result.recordset[0].USERNAME;
-        const token = jwt.sign(nama, config.password);
+        const token = jwt.sign(nama, password);
         res.setHeader('Authorization', token)
         localStorage.setItem('Authorization', token)
         localStorage.setItem('kurir', kurir)
@@ -276,7 +276,6 @@ exports.stockies = (req, res) => {
 }
 
 // get list DO where ID_STOCKIES AND TANGGAL_DO
-// I love you
 exports.listDO = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -287,7 +286,7 @@ exports.listDO = (req, res) => {
 
   pool_whm.then(pool => {
     pool.request()
-      .query(`SELECT ID_DO, NO_DO, NAMA, NO_RESI,TANGGAL_DO
+      .query(`SELECT ID_DO, NO_DO, NAMA, NO_RESI, CONVERT(VARCHAR(30), TANGGAL_DO, 20) AS TANGGAL_DO
               FROM klink_whm_testing.dbo.T_DO
               WHERE ID_STOCKIES = '${id_stockies}' AND ID_COURIER = '${ekspedisi}' AND IS_FAILED = '0'
               AND CREATED_DATE BETWEEN '${tgl_awal}' AND '${tgl_akhir}'`, (err, result) => {
