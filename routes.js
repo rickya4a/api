@@ -46,6 +46,33 @@ module.exports = function(app) {
   app.route('/selectDate')
     .post(pineapple.selectDate);
 
+  app.route('/countDate')
+    .get(pineapple.countDate);
+
+  app.route('/selectKWByDate')
+    .get(pineapple.selectKWByDate);
+
+  app.route('/checkStkWms')
+    .get(pineapple.checkStkWms);
+
+  app.route('/checkStkMssc')
+    .get(pineapple.checkStkMssc);
+
+  app.route('/insertStkWms')
+    .post(pineapple.insertStkWms);
+
+  app.route('/countProdukAlias')
+    .get(pineapple.countProdukAlias);
+
+  app.route('/selectProdukAlias')
+    .get(pineapple.selectProdukAlias);
+
+  app.route('/insertKWStk')
+    .post(pineapple.insertKWStk);
+
+  app.route('/insertKWInv')
+    .post(pineapple.insertKWInv);
+
   app.route('/bbhdr')
     .get(pineapple.bbhdr);
 }
