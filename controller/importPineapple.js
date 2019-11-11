@@ -3,27 +3,29 @@ const { pool_whm, pool_mlm } = require('../config/db_config')
 /**
  * Get data date from database
  *
- * @param   {mixed}  req  request body
- * @param   {mixed}  res  http response
+ * @params   {mixed}  req  request body
+ * @params   {mixed}  res  http response
  *
  * @return  {array}
  */
 exports.selectDate = function(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let tglawal = req.body.tglawal;
-  let tglakhir = req.body.tglakhir;
+  let tglawal = req.params.tglawal;
+  let tglakhir = req.params.tglakhir;
+  console.log(tglawal);
+  console.log(tglakhir);
   return pool_mlm.then(pool => {
     pool.request()
       .query(`SELECT createdt FROM getpinaple WHERE createdt BETWEEN '${tglawal}' AND '${tglakhir}' GROUP BY createdt`, (err, result) => {
       if (err) throw err
-      res.json(result)
+      res.json(result.recordset)
     })
   })
 }
 
 exports.countDate = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let tanggal = req.body.tanggal;
+  let tanggal = req.params.tanggal;
   pool_whm.then(pool => {
     pool.request()
     .query(`SELECT COUNT(*) as JUMT FROM klink_whm_testing.dbo.T_SALESSIMULATION WHERE TRANSAKSI_DATE = '${tanggal}'`, 
@@ -36,7 +38,7 @@ exports.countDate = (req, res) => {
 
 exports.selectKWByDate = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let tanggal = req.body.tanggal;
+  let tanggal = req.params.tanggal;
   pool_mlm.then(pool => {
     pool.request()
     .query(`SELECT * FROM klink_mlm2010.dbo.getpinaple WHERE createdt = '${tanggal}'`, 
@@ -49,7 +51,7 @@ exports.selectKWByDate = (req, res) => {
 
 exports.checkStkWms = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let code_stockies = req.body.code_stockies;
+  let code_stockies = req.params.code_stockies;
   pool_whm.then(pool => {
     pool.request()
     .query(`SELECT COUNT(*) AS STOKIES FROM klink_whm_testing.dbo.MASTER_STOCKIES WHERE CODE_STOCKIES = '${code_stockies}'`, 
@@ -62,10 +64,10 @@ exports.checkStkWms = (req, res) => {
 
 exports.checkStkMssc = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let loccd = req.body.loccd;
+  let loccd = req.params.loccd;
   pool_mlm.then(pool => {
     pool.request()
-    .query(`SELECT * FROM klink_mlm2010.dbo.mssc WHERE loccd = '${loccd}'`, 
+    .query(`SELECT loccd, fullnm, addr1 FROM klink_mlm2010.dbo.mssc WHERE loccd = '${loccd}'`, 
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -95,7 +97,7 @@ exports.insertStkWms = (req, res) => {
 
 exports.countProdukAlias = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let alias_code = req.body.alias_code;
+  let alias_code = req.params.alias_code;
   
   pool_whm.then(pool => {
     pool.request()
@@ -109,7 +111,7 @@ exports.countProdukAlias = (req, res) => {
 
 exports.selectProdukAlias = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let alias_code = req.body.alias_code;
+  let alias_code = req.params.alias_code;
 
   pool_whm.then(pool => {
     pool.request()
@@ -171,6 +173,25 @@ exports.insertKWInv = (req, res) => {
       res.send({ message: 'Success insert data' })
     })
   })
+}
+
+exports.getRePinaple = (req, res) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  let tanggal = req.params.tanggal;
+
+  pool_mlm.then(pool => {
+    pool.request()
+    .query(`SELECT * FROM klink_mlm2010.dbo.getpinaple 
+    WHERE createdt = '${tanggal}' 
+    AND trcd COLLATE SQL_Latin1_General_CP1_CI_AS NOT  IN  
+    (SELECT KWITANSI_NO COLLATE SQL_Latin1_General_CP1_CI_AS 
+    FROM klink_whm_testing.dbo.T_SALESSIMULATION WHERE TRANSAKSI_DATE = '${tanggal}')`, 
+    (err, result) => {
+      if (err) throw err
+      res.json(result.recordset)
+    })
+  })
+
 }
 
 exports.bbhdr = function(req, res, next) {

@@ -43,28 +43,28 @@ module.exports = function(app) {
     .post(tracking.listDO);
 
   // routes pineapple
-  app.route('/selectDate')
-    .post(pineapple.selectDate);
+  app.route('/selectDate/:tglawal/:tglakhir')
+    .get(pineapple.selectDate);
 
-  app.route('/countDate')
+  app.route('/countDate/:tanggal')
     .get(pineapple.countDate);
 
-  app.route('/selectKWByDate')
+  app.route('/selectKWByDate/:tanggal')
     .get(pineapple.selectKWByDate);
 
-  app.route('/checkStkWms')
+  app.route('/checkStkWms/:code_stockies')
     .get(pineapple.checkStkWms);
 
-  app.route('/checkStkMssc')
+  app.route('/checkStkMssc/:loccd')
     .get(pineapple.checkStkMssc);
 
   app.route('/insertStkWms')
     .post(pineapple.insertStkWms);
 
-  app.route('/countProdukAlias')
+  app.route('/countProdukAlias/:alias_code')
     .get(pineapple.countProdukAlias);
 
-  app.route('/selectProdukAlias')
+  app.route('/selectProdukAlias/:alias_code')
     .get(pineapple.selectProdukAlias);
 
   app.route('/insertKWStk')
@@ -72,6 +72,9 @@ module.exports = function(app) {
 
   app.route('/insertKWInv')
     .post(pineapple.insertKWInv);
+
+  app.route('/getRePinaple/:tanggal')
+    .get(pineapple.getRePinaple);
 
   app.route('/bbhdr')
     .get(pineapple.bbhdr);
