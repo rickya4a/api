@@ -286,12 +286,15 @@ exports.listDO = (req, res) => {
 
   pool_whm.then(pool => {
     pool.request()
-      .query(`SELECT ID_DO, NO_DO, NAMA, NO_RESI, CONVERT(VARCHAR(30), TANGGAL_DO, 20) AS TANGGAL_DO
-              FROM klink_whm_testing.dbo.T_DO
-              WHERE ID_STOCKIES = '${id_stockies}' AND ID_COURIER = '${ekspedisi}' AND IS_FAILED = '0'
-              AND CREATED_DATE BETWEEN '${tgl_awal}' AND '${tgl_akhir}'`, (err, result) => {
-              if (err) throw err
-              res.json(result.recordset)
+      .query(`SELECT A.ID_DO, A.NO_DO, A.NAMA, A.NO_RESI, A.ALAMAT1, 
+        CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
+          A.ID_WAREHOUSE, B.WAREHOUSE_NAME
+      FROM klink_whm.dbo.T_DO A
+      LEFT JOIN klink_whm.dbo.MASTER_WAREHOUSE B ON A.ID_WAREHOUSE = B.ID_WAREHOUSE
+      WHERE A.ID_STOCKIES = '${id_stockies}' AND A.IS_FAILED = '0' AND A.ID_COURIER = '${ekspedisi}'
+      AND A.CREATED_DATE BETWEEN '${tgl_awal}' AND '${tgl_akhir}'`, (err, result) => {
+        if (err) throw err
+        res.json(result.recordset)
       })
   })
 }
