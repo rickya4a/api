@@ -14,7 +14,8 @@ const config_mlm = {
   user: 'sa',
   password: 'QwertY@123',
   server: '192.168.22.3',
-  database: 'klink_mlm2010'
+  database: 'klink_mlm2010',
+  requestTimeout: 50000
 };
 
 const pool_whm = new sql.ConnectionPool(config_whm).connect();
