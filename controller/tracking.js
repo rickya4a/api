@@ -286,7 +286,7 @@ exports.listDO = (req, res) => {
 
   pool_whm.then(pool => {
     pool.request()
-      .query(`SELECT A.ID_DO, A.NO_DO, A.NAMA, A.NO_RESI, A.ALAMAT1, 
+      .query(`SELECT A.ID_DO, A.NO_DO, A.NAMA, A.NO_RESI, A.ALAMAT1,
           CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
           A.ID_WAREHOUSE, B.WAREHOUSE_NAME
       FROM klink_whm.dbo.T_DO A
