@@ -3,6 +3,7 @@ module.exports = function(app) {
   // ---- all controllers here ---- //
   const tracking = require('./controller/tracking');
   const pineapple = require('./controller/importPineapple');
+  const initiateDO = require('./controller/initiateDO');
   // ---- end controllers here ---- //
 
   // routes tracking
@@ -78,4 +79,52 @@ module.exports = function(app) {
 
   app.route('/bbhdr')
     .get(pineapple.bbhdr);
+
+  // route initiate DO
+  app.route('/getDataHeader/:idstockies')
+    .get(initiateDO.getDataHeader)
+
+  app.route('/getListProductsKW/:kw')
+    .get(initiateDO.getListProductsKW)
+
+  app.route('/checkAliasProdSingle/:alias')
+    .get(initiateDO.checkAliasProdSingle)
+
+  app.route('/checkBoxProduct/:product')
+    .get(initiateDO.checkBoxProduct)
+
+  app.route('/checkAliasProdBundling/:bundle')
+    .get(initiateDO.checkAliasProdBundling)
+
+  app.route('/getDetailBundling/:bundle')
+    .get(initiateDO.getDetailBundling)
+
+  // belum dites 
+  app.route('/checkProduct/:product')
+    .get(initiateDO.checkProduct)
+
+  app.route('/processKW/:kw')
+    .get(initiateDO.processKW)
+
+  app.route('/updateFlagProdBundling/:idsalessimulation')
+    .get(initiateDO.updateFlagProdBundling)
+
+  app.route('/processProdBundling/:alias')
+    .get(initiateDO.processProdBundling)
+
+  app.route('/searchProductCode/:idproduct')
+    .get(initiateDO.searchProductCode)
+
+  app.route('/searchAlias/:aliascode')
+    .get(initiateDO.searchAlias)
+
+  app.route('/checkDuplicateAlias/:kw/:alias')
+    .get(initiateDO.checkDuplicateAlias)
+
+  app.route('/updateQtyDuplicateAlias/:idsalessimulation/:qty')
+    .get(initiateDO.updateQtyDuplicateAlias)
+
+  app.route('/updateFlagKw/:kw')
+    .get(initiateDO.updateFlagKw)
+
 }
