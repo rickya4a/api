@@ -27,7 +27,7 @@ exports.getListProductsKW = (req, res) => {
 	
 	pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT A.PRODUK_ALIAS_ID, B.ALIAS_CODE, B.IS_BUNDLE
+    .query(`SELECT A.PRODUK_ALIAS_ID, B.ALIAS_CODE, B.IS_BUNDLE, B.ID_PRODUCT
     FROM klink_whm_testing.dbo.T_SALESSIMULATION A
     LEFT JOIN klink_whm_testing.dbo.MASTER_PRODUK_ALIAS B ON B.PRODUK_ALIAS_ID = A.PRODUK_ALIAS_ID
     WHERE A.KWITANSI_NO = '${kw}' AND A.IS_ACTIVE = '0'`, 
@@ -45,7 +45,7 @@ exports.checkAliasProdSingle = (req, res) => {
 
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT COUNT(*) AS JUM FROM MASTER_PRODUK_ALIAS a
+    .query(`SELECT COUNT(*) AS JUM FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS a
     JOIN klink_whm_testing.dbo.MASTER_PRODUK b ON b.ID_PRODUCT = a.ID_PRODUCT
     where PRODUK_ALIAS_ID = '${alias}' AND a.IS_BUNDLE = 0`, 
     (err, result) => {
