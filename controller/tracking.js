@@ -162,6 +162,7 @@ exports.getTrackingKnetStockis = (req, res) => {
         res.send({ header: null, tracking: null })
       } else {
         let id_do = result.recordset[0].ID_DO;
+        console.log(id_do);
         pool_whm.then(pool => {
           pool.request()
           .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY

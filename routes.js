@@ -4,6 +4,7 @@ module.exports = function(app) {
   const tracking = require('./controller/tracking');
   const pineapple = require('./controller/importPineapple');
   const initiateDO = require('./controller/initiateDO');
+  const createDO = require('./controller/createDO');
   // ---- end controllers here ---- //
 
   // routes tracking
