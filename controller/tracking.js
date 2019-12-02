@@ -94,14 +94,14 @@ exports.insertData = (req, res) => {
     .input('date', req.body.tanggal)
     .input('status', req.body.status)
     .input('dateCreated', req.body.created_date)
-    .input('createdBy', localStorage.getItem('username'))
+    .input('createdBy', req.body.created_by)
     .input('warehouseId', req.body.id_warehouse)
     .input('trackingId', req.body.id_tracking)
     .input('weight', req.body.berat)
     .input('batch', req.body.koli)
     .query(`INSERT INTO T_TRACKING_DO (ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE, CREATED_BY, ID_WAREHOUSE, ID_TRACKING, BERAT, KOLI)
       VALUES (@doId, @noDo, CONVERT(VARCHAR(30), @date, 20), @status, CONVERT(VARCHAR(30), @dateCreated, 20),
-      @createdBy, @warehouseId, @trackingId, @wieght, @batch)`, (err, result) => {
+      @createdBy, @warehouseId, @trackingId, @weight, @batch)`, (err, result) => {
       if (err) throw err
       res.send({ message: 'Success insert data' })
     })
