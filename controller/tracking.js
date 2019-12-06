@@ -1,6 +1,7 @@
-const jwt = require('jsonwebtoken'),
-  localStorage = require('localStorage'),
-  { pool_whm, pool_mlm, pool_ecommerce, sql } = require('../config/db_config');
+const localStorage = require('localStorage'),
+  { pool_whm, pool_mlm, sql } = require('../config/db_config'),
+  auth = require('../config/auth_service'),
+  Base64 = require('js-base64').Base64;
 
 exports.index = (req, res) => { // urutan paramnya harus req, res
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -15,7 +16,8 @@ exports.index = (req, res) => { // urutan paramnya harus req, res
 
 exports.tracking = (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
@@ -29,7 +31,8 @@ exports.tracking = (req, res) => {
 
 exports.getDetail = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
@@ -60,7 +63,8 @@ exports.getDetail = async (req, res) => {
 
 exports.findTracking = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
@@ -83,7 +87,8 @@ exports.findTracking = async (req, res) => {
 
 exports.insertData = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
@@ -128,6 +133,7 @@ exports.insertData = async (req, res) => {
 exports.findCourier = async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
+  if (req.body.appkey != 'k-tracking') return res.status(401).json({ message: 'Unauthorized'});
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
   ps.input('userName', sql.VarChar)
@@ -142,11 +148,14 @@ exports.findCourier = async (req, res) => {
       } else if (!result.recordset) {
         res.status(204).json({ values: null, message: 'User not found' });
       } else {
-        let nama = result.recordset[0].NAME;
+        let payload = {
+          name: result.recordset[0].NAME,
+          password: Base64.encode(result.recordset[0].PASSWORD)
+        };
         let kurir = result.recordset[0].PARENT_COURIER;
         let username = result.recordset[0].USERNAME;
-        const token = jwt.sign(nama, password);
-        res.setHeader('Authorization', token);
+        const token = auth.sign(payload, 'k-tracking');
+        res.setHeader('Authorization', `Bearer ${token}`);
         localStorage.setItem('Authorization', token);
         localStorage.setItem('kurir', kurir);
         localStorage.setItem('username', username);
@@ -248,7 +257,8 @@ exports.getTrackingKnetInv = async (req, res) => {
 
 exports.getDataCourier = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
@@ -272,9 +282,9 @@ exports.getDataCourier = async (req, res) => {
 }
 
 exports.updatePassCourier = async (req, res) => {
-  //set header auth
   let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
@@ -326,6 +336,9 @@ exports.stockies = (req, res) => {
 
 // get list DO where ID_STOCKIES AND TANGGAL_DO
 exports.listDO = (req, res) => {
+  let token = localStorage.getItem('Authorization');
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()

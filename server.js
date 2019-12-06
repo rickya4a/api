@@ -14,5 +14,5 @@ routes(app);
 const server = app.listen(5500, function(){
   const port = server.address().port
   console.log("app listening at ", port);
-}); 
+});
 
