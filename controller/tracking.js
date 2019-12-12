@@ -273,15 +273,16 @@ exports.updatePassCourier = async (req, res) => {
 }
 
 // get list stockies for form do manual wms (testing)
-exports.stockies = (req, res) => {
+export function stockies(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const pool = await pool_whm;
-  pool.request()
-  .query(`SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES FROM klink_whm.dbo.MASTER_STOCKIES WHERE IS_ACTIVE = 0
-  ORDER BY NAMA_STOCKIES ASC`, (err, result) => {
-    if (err) throw err;
-    res.json(result.recordset);
-  });
+  return pool_whm.then(pool => {
+    pool.request()
+      .query(`SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES FROM klink_whm.dbo.MASTER_STOCKIES WHERE IS_ACTIVE = 0
+      ORDER BY NAMA_STOCKIES ASC`, (err, result) => {
+      if (err) throw err
+      res.json(result.recordset)
+    })
+  })
 }
 
 // get list DO where ID_STOCKIES AND TANGGAL_DO
