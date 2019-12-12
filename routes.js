@@ -82,7 +82,7 @@ module.exports = function(app) {
     .get(pineapple.bbhdr);
 
   // route initiate DO
-  app.route('/getDataHeader/:idstockies')
+  app.route('/getHeaderInitDO/:idstockies')
     .get(initiateDO.getDataHeader)
 
   app.route('/getListProductsKW/:kw')
@@ -90,6 +90,7 @@ module.exports = function(app) {
 
   app.route('/checkAliasProdSingle/:alias')
     .get(initiateDO.checkAliasProdSingle)
+
 
   app.route('/checkBoxProduct/:product')
     .get(initiateDO.checkBoxProduct)
@@ -100,7 +101,6 @@ module.exports = function(app) {
   app.route('/getDetailBundling/:bundle')
     .get(initiateDO.getDetailBundling)
 
-  // belum dites 
   app.route('/checkProduct/:product')
     .get(initiateDO.checkProduct)
 
@@ -128,4 +128,38 @@ module.exports = function(app) {
   app.route('/updateFlagKw/:kw')
     .get(initiateDO.updateFlagKw)
 
+  // route create DO
+  app.route('/getHeaderDO/:initiate_do_id')
+    .get(createDO.getDataHeader)
+
+  app.route('/getDetailProduct/:initiate_do_id')
+    .get(createDO.getDetailProduct)
+
+  app.route('/getListIndent/:initiate_do_id')
+    .get(createDO.getListIndent)
+
+  app.route('/getMasterProduct/:id_product')
+    .get(createDO.getMasterProduct)  
+
+  app.route('/checkBox/:id_warehouse/:id_product')
+    .get(createDO.checkBox)
+
+  app.route('/checkPcs/:id_warehouse/:id_product')
+    .get(createDO.checkPcs)
+
+  app.route('/processReceiptNo/:initiate_do_id')
+    .get(createDO.processReceiptNo)
+
+  app.route('/processProductSingle/:kw')
+    .get(createDO.processProductSingle)
+
+  app.route('/checkStockProductBox/:id_warehouse/:id_product')
+    .get(createDO.checkStockProductBox)
+
+  app.route('/checkStockProductPcs/:id_warehouse/:id_product')
+    .get(createDO.checkStockProductPcs)
+
+  app.route('/checkProductIndent/:kw/:produk_alias_id')
+    .get(createDO.checkProductIndent)
+    
 }
