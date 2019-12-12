@@ -1,150 +1,179 @@
-const jwt = require('jsonwebtoken'),
-  localStorage = require('localStorage'),
-  { pool_whm, pool_mlm } = require('../config/db_config');
+import { getItem, setItem } from 'localStorage';
+import { pool_whm, pool_mlm, sql } from '../config/db_config';
+import { verify as _verify, sign } from '../config/auth_service';
+import { Base64 } from 'js-base64';
 
-exports.index = function(req, res, err) { // urutan paramnya harus req, res
+export async function index(req, res) { // urutan paramnya harus req, res
   res.setHeader('Access-Control-Allow-Origin', '*');
-  return pool_mlm.then(pool => {
-    pool.request()
-      .query('SELECT TOP 10 * FROM bbhdr', (err, result) => {
-      if (err) throw err
-      res.json(result.recordset)
-    })
-  })
+  const pool = await pool_mlm;
+  pool.request()
+  .query('SELECT TOP 10 * FROM bbhdr', (err, result) => {
+    if (err) throw err;
+    res.json(result.recordset);
+  });
 }
 
-exports.tracking = function(req, res) {
+export function tracking(req, res) {
+  let token = getItem('Authorization');
+  let verify = _verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+  res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
     pool.request()
       .query('SELECT ID_DO, NO_DO, STATUS, CONVERT(VARCHAR(30), TANGGAL, 20) AS TANGGAL, CREATED_BY FROM T_TRACKING_DO', (err, result) => {
-      if (err) throw err
-      res.json(result.recordset)
+      if (err) throw err;
+      res.json(result.recordset);
     })
   })
 }
 
-exports.getDetail = (req, res) => {
-  let token = localStorage.getItem('Authorization');
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
+export async function getDetail(req, res) {
+  let token = getItem('Authorization');
+  let verify = _verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let no_do = req.params.NO_DO;
-  let kurir = localStorage.getItem('kurir');
-  pool_whm.then(pool => {
-    pool.request()
-    .query(`SELECT a.ID_DO, a.NO_DO, a.ID_COURIER, a.ID_STOCKIES, a.NAMA, a.ALAMAT1, a.ID_WAREHOUSE, a.NO_RESI,
+  const ps = new sql.PreparedStatement(await pool_whm);
+  ps.input('noDo', sql.VarChar)
+  .input('courier', sql.VarChar)
+  .prepare(`SELECT a.ID_DO, a.NO_DO, a.ID_COURIER, a.ID_STOCKIES, a.NAMA, a.ALAMAT1, a.ID_WAREHOUSE, a.NO_RESI,
     b.NAMA, c.NAMA_STOCKIES, c.CODE_STOCKIES, d.WAREHOUSE_NAME
     FROM T_DO a
     LEFT JOIN COURIER b on a.ID_COURIER = b.ID
     LEFT JOIN MASTER_STOCKIES c on a.ID_STOCKIES = c.ID_STOCKIES
     LEFT JOIN MASTER_WAREHOUSE d on a.ID_WAREHOUSE = d.ID_WAREHOUSE
-    WHERE a.NO_DO = '${no_do}' AND a.ID_COURIER = '${kurir}';
+    WHERE a.NO_DO = @noDo AND a.ID_COURIER = @courier;
     SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY, BERAT, KOLI
-    FROM T_TRACKING_DO WHERE NO_DO = '${no_do}' ORDER BY CREATED_DATE DESC`, (err, result) => {
-        if (err) {
-          throw err
-        } else if (!result.recordsets) {
-          res.send({ values: null, message: 'Data not found' })
-        } else {
-          res.json(result.recordsets)
-        }
+    FROM T_TRACKING_DO WHERE NO_DO = @noDo ORDER BY CREATED_DATE DESC`, err => {
+    if (err) throw err;
+    ps.execute({ noDo: req.params.NO_DO, courier: getItem('kurir') }, (err, result) => {
+      if (err) {
+        throw err;
+      } else if (!result.recordsets) {
+        res.send({ values: null, message: 'Data not found' });
+      } else {
+        res.json(result.recordsets);
+      }
+      return ps.unprepare();
     })
   })
 }
 
-exports.findTracking = (req, res) => {
-  let token = localStorage.getItem('Authorization');
-  let no_do = req.params.NO_DO;
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
+export async function findTracking(req, res) {
+  let token = getItem('Authorization');
+  let verify = _verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  pool_whm.then(pool => {
-    pool.request()
-      .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE,
-      CREATED_BY from T_TRACKING_DO WHERE NO_DO = '${no_do}'`, (err, result) => {
-        if (err) {
-          throw err
-        } else if (!result.recordset) {
-          res.status(204).json({ values: null, message: 'Data not found' })
-        } else {
-          res.json(result.recordsets)
-        }
-    })
-  })
-}
-
-exports.insertData = (req, res) => {
-  let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) {
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
-  res.setHeader('Authorization', `Bearer ${token}`);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  const username = localStorage.getItem('username');
-
-  let id_do = req.body.id_do;
-  let no_do = req.body.no_do;
-  let tanggal = req.body.tanggal;
-  let status = req.body.status;
-  let created_date = req.body.created_date;
-  let created_by = username;
-  let id_warehouse = req.body.id_warehouse;
-  let id_tracking = req.body.id_tracking;
-  let berat = req.body.berat;
-  let koli =  req.body.koli;
-
-  pool_whm.then(pool => {
-    pool.request()
-    .query(`INSERT INTO T_TRACKING_DO (ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE, CREATED_BY, ID_WAREHOUSE, ID_TRACKING, BERAT, KOLI)
-      VALUES ('${id_do}', '${no_do}', CONVERT(VARCHAR(30), '${tanggal}', 20), '${status}', CONVERT(VARCHAR(30), '${created_date}', 20),
-      '${created_by}', '${id_warehouse}', '${id_tracking}', '${berat}', '${koli}')`, (err, result) => {
-      if (err) throw err
-      res.send({ message: 'Success insert data' })
-    })
-  })
-}
-
-exports.findCourier = (req, res) => {
-  let username = req.body.username;
-  let password = req.body.password;
-
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  pool_whm.then(pool => {
-    pool.request()
-    .query(`SELECT ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME
-            FROM klink_whm_testing.dbo.MASTER_COURIER
-            WHERE USERNAME = '${username}' AND PASSWORD = '${password}'`, (err, result) => {
+  const ps = new sql.PreparedStatement(await pool_whm);
+  ps.input('noDo', sql.VarChar)
+  .prepare(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE,
+    CREATED_BY from T_TRACKING_DO WHERE NO_DO = @noDo`, err => {
+    if (err) throw err;
+    ps.execute({ noDo: req.params.NO_DO }, (err, result) => {
       if (err) {
         throw err
       } else if (!result.recordset) {
-        res.status(204).json({ values: null, message: 'User not found' })
+        res.status(204).json({ values: null, message: 'Data not found' })
       } else {
-        let nama = { name: result.recordset[0].NAME }
-        let kurir = result.recordset[0].PARENT_COURIER;
-        let username = result.recordset[0].USERNAME;
-        const token = jwt.sign(nama, password);
-        res.setHeader('Authorization', token)
-        localStorage.setItem('Authorization', token)
-        localStorage.setItem('kurir', kurir)
-        localStorage.setItem('username', username)
-        res.json({ user: result.recordset, token: token })
+        res.json(result.recordsets)
       }
+      return ps.unprepare();
     })
   })
 }
 
-exports.getTrackingKnetStockis = (req, res) => {
+export async function insertData(req, res) {
+  let token = getItem('Authorization');
+  let verify = _verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+  res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let trcd = req.params.trcd;
+  const ps = new sql.PreparedStatement(await pool_whm);
+  ps.input('doId', sql.VarChar)
+  .input('noDo', sql.VarChar)
+  .input('date', sql.VarChar)
+  .input('status', sql.VarChar)
+  .input('dateCreated', sql.VarChar)
+  .input('createdBy', sql.VarChar)
+  .input('warehouseId', sql.VarChar)
+  .input('trackingId', sql.VarChar)
+  .input('weight', sql.VarChar)
+  .input('batch', sql.VarChar)
+  .prepare(`INSERT INTO T_TRACKING_DO (ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE, CREATED_BY, ID_WAREHOUSE, ID_TRACKING, BERAT, KOLI)
+    VALUES (@doId, @noDo, CONVERT(VARCHAR(30), @date, 20), @status, CONVERT(VARCHAR(30), @dateCreated, 20),
+    @createdBy, @warehouseId, @trackingId, @weight, @batch)`, err => {
+    if (err) throw err;
+    ps.execute({
+      doId: req.body.id_do,
+      noDo: req.body.no_do,
+      date: req.body.tanggal,
+      status: req.body.status,
+      dateCreated: req.body.created_date,
+      createdBy: req.body.created_by,
+      warehouseId: req.body.id_warehouse,
+      trackingId: req.body.id_tracking,
+      weight: req.body.berat,
+      batch: req.body.koli
+    }, (err, result) => {
+      if (err) {
+        throw err;
+      } else if (!result) {
+        res.status(500).send({message: 'Whoops! Something went wrong'})
+      } else {
+        res.json({ message: 'Success insert data' })
+      }
+      return ps.unprepare();
+    })
+  })
+}
 
-  pool_mlm.then(pool => {
-    pool.request()
-    .query(`SELECT TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt, CONVERT(VARCHAR(10), a.batchdt, 120) as batchdt,
+export async function findCourier(req, res) {
+  let username = req.body.username;
+  let password = req.body.password;
+  if (req.body.appkey != 'k-tracking') return res.status(401).json({ message: 'Unauthorized'});
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const ps = new sql.PreparedStatement(await pool_whm);
+  ps.input('userName', sql.VarChar)
+  .input('password', sql.VarChar)
+  .prepare(`SELECT ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME
+    FROM klink_whm_testing.dbo.MASTER_COURIER
+    WHERE USERNAME = @userName AND PASSWORD = @password`, err => {
+    if (err) throw err;
+    ps.execute({ userName: username, password: password }, (err, result) => {
+      if (err) {
+        throw err;
+      } else if (!result.recordset) {
+        res.status(204).json({ values: null, message: 'User not found' });
+      } else {
+        let payload = {
+          name: result.recordset[0].NAME,
+          password: Base64.encode(result.recordset[0].PASSWORD)
+        };
+        let kurir = result.recordset[0].PARENT_COURIER;
+        let username = result.recordset[0].USERNAME;
+        const token = sign(payload, 'k-tracking');
+        res.setHeader('Authorization', `Bearer ${token}`);
+        setItem('Authorization', token);
+        setItem('kurir', kurir);
+        setItem('username', username);
+        res.json({ user: result.recordset, token: token });
+      }
+      return ps.unprepare();
+    })
+  })
+}
+
+export async function getTrackingKnetStockis(req, res) {
+  // -- disable temporarily since K-Net have not implemented JWT token -- //
+  /* let token = localStorage.getItem('Authorization');
+  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  res.setHeader('Authorization', `Bearer ${token}`); */
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const ps = new sql.PreparedStatement(await pool_mlm);
+  ps.input('trcd', sql.VarChar)
+  .prepare(`SELECT TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt, CONVERT(VARCHAR(10), a.batchdt, 120) as batchdt,
               a.createdt, a.createnm, a.dfno, a.distnm, a.loccd, a.loccdnm, a.tdp, a.tbv, a.bnsperiod, b.createnm as cnms_createnm,
               CONVERT(VARCHAR(10), b.createdt, 120) as cnms_createdt, b.receiptno, c.createdt as kw_date, c.createnm as kw_createnm,
               d.GDO, e.createnm as gdo_createnm, CONVERT(VARCHAR(10), e.etdt, 120) as gdo_createdt, e.shipto, f.ID_DO, g.NO_DO
@@ -155,115 +184,144 @@ exports.getTrackingKnetStockis = (req, res) => {
             LEFT OUTER JOIN klink_mlm2010.dbo.gdohdr e ON (d.GDO = e.trcd)
             LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO f ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS)
             LEFT OUTER JOIN klink_whm.dbo.T_DO g ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS)
-            WHERE a.trcd = '${trcd}'`, (err, result) => {
+            WHERE a.trcd = @trcd`, err => {
+    if (err) throw err;
+    ps.execute({ trcd: req.params.trcd }, (err, header) => {
       if (err) {
-        throw err
-      } else if (!result.recordset) {
-        res.send({ header: null, tracking: null })
+        throw err;
+      } else if (!header.recordset) {
+        res.send({ header: null, tracking: null });
       } else {
-        let id_do = result.recordset[0].ID_DO;
+        let id_do = header.recordset[0].ID_DO;
         pool_whm.then(pool => {
           pool.request()
+          .input('id_do', id_do)
           .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
-                  FROM T_TRACKING_DO where ID_DO = '${id_do}' ORDER BY CREATED_DATE DESC`, (err, result) => {
+                  FROM T_TRACKING_DO where ID_DO = @id_do ORDER BY CREATED_DATE DESC`, (err, tracking) => {
             if (err) {
-              throw err
-            } else if (!result.recordsets) {
-              res.send({ header: result.recordset, tracking: null})
+              throw err;
+            } else if (!tracking.recordset) {
+              res.send({ header: header.recordset, tracking: null });
             } else {
-              res.json({ header: result.recordset, tracking: result.recordset })
+              res.json({ header: header.recordset, tracking: tracking.recordset });
             }
           })
         })
       }
+      return ps.unprepare();
     })
   })
 }
 
-exports.getTrackingKnetInv = (req, res) => {
+export async function getTrackingKnetInv(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let invoiceno = req.params.invoiceno;
-  pool_whm.then(pool => {
-    pool.request()
-    .query(`SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd as cn_no,
+  const ps = new sql.PreparedStatement(await pool_whm);
+  ps.input('invoiceNo', sql.VarChar)
+  .prepare(`SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd as cn_no,
             d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, d.trcd, e.fullnm
             FROM klink_whm.dbo.T_DO a
             LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO b ON (a.ID_DO = b.ID_DO)
             LEFT OUTER JOIN klink_mlm2010.dbo.intrh c ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = c.applyto)
             LEFT OUTER JOIN klink_mlm2010.dbo.ordtrh d ON (b.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = d.receiptno)
             LEFT OUTER JOIN klink_mlm2010.dbo.msmemb e ON (e.dfno = d.dfno)
-            WHERE d.invoiceno = '${invoiceno}'
-            GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, e.fullnm`, (err, result) => {
+            WHERE d.invoiceno = @invoiceNo
+            GROUP BY a.ID_DO, a.NO_DO, b.NO_KWITANSI, c.GDO, c.trtype, d.trcd, d.dfno, d.invoiceno, d.loccd, d.registerno, d.whcd, e.fullnm`, err => {
+    if (err) throw err;
+    ps.execute({ invoiceNo: req.params.invoiceno }, (err, header) => {
       if (err) {
-        throw err
-      } else if (!result.recordset) {
-        res.send({ header: null, tracking: null})
+        throw err;
+      } else if (!header.recordset) {
+        res.send({ header: null, tracking: null });
       } else {
-        let id_do = result.recordset[0].ID_DO;
-        pool.request()
-        .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
-                FROM T_TRACKING_DO where ID_DO = '${id_do}' ORDER BY CREATED_DATE DESC`, (err, result) => {
-          if (err) {
-            throw err
-          } else if (!result.recordsets) {
-            res.send({ header: result.recordset, tracking: null})
-          } else {
-            res.json({ header: records.recordset, tracking: rows.recordset })
-          }
+        let id_do = header.recordset[0].ID_DO;
+        pool_whm.then(pool => {
+          pool.request()
+          .input('id_do', id_do)
+          .query(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
+                  FROM T_TRACKING_DO where ID_DO = @id_do ORDER BY CREATED_DATE DESC`, (err, tracking) => {
+            if (err) {
+              throw err;
+            } else if (!tracking.recordset) {
+              res.send({ header: header.recordset, tracking: null });
+            } else {
+              res.json({ header: header.recordset, tracking: tracking.recordset });
+            }
+          })
         })
       }
+      return ps.unprepare();
     })
   })
 }
 
-exports.getDataCourier = (req, res) => {
-  let token = localStorage.getItem('Authorization');
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
-  //post username and password from client side
-  let username = req.params.username;
+export async function getDataCourier(req, res) {
+  let token = getItem('Authorization');
+  let verify = _verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  pool_whm.then(pool => {
-    pool.request()
-    .query(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE, a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI
-            FROM MASTER_COURIER a
+  const ps = new sql.PreparedStatement(await pool_whm);
+  ps.input('userName', sql.VarChar)
+  .prepare(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE, a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI
+            FROM klink_whm_testing.dbo.MASTER_COURIER a
             INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID
-            WHERE a.USERNAME = '${username}'`, (err, result) => {
+            WHERE a.USERNAME = @userName`, err => {
+    if (err) throw err;
+    ps.execute({ userName: req.params.username }, (err, result) => {
       if (err) {
-        throw err
+        throw err;
       } else if (!result.recordset) {
-        res.send({ values: null, message: 'User Not Found' })
+        res.send({ values: null, message: 'User Not Found' });
       } else {
-        res.json(result.recordset)
+        res.json(result.recordset);
       }
+      return ps.unprepare();
     })
   })
 }
 
-exports.updatePassCourier = (req, res) => {
-  //post username and password from client side
-  let username = req.body.username;
-  let oldpassword = req.body.oldpassword;
-  let newpassword = req.body.newpassword;
-
-  //set header auth
+export async function updatePassCourier(req, res) {
+  let token = getItem('Authorization');
+  let verify = _verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+  res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  pool_whm.then(pool => {
-    pool.request()
-      .query(`SELECT PASSWORD FROM MASTER_COURIER WHERE USERNAME = '${username}' AND PASSWORD = '${oldpassword}'`, (err, result) => {
-      if (err) throw err
-      pool.query(`UPDATE MASTER_COURIER SET PASSWORD = '${newpassword}' WHERE USERNAME = '${username}'`, (err, result) => {
-        if (err) throw err
-        res.send({ message: 'Success updated password' })
-      })
+  const ps = new sql.PreparedStatement(await pool_whm);
+  ps.input('userName', sql.VarChar)
+  .input('oldPassword', sql.VarChar)
+  .input('newPassword', sql.VarChar)
+  .prepare(`SELECT PASSWORD FROM klink_whm_testing.dbo.MASTER_COURIER WHERE USERNAME = @userName AND PASSWORD = @oldPassword`, err => {
+    if (err) throw err;
+    ps.execute({
+      userName: req.body.username,
+      oldPassword: req.body.oldpassword
+    }, (err, result) => {
+      if (err) {
+        throw err
+      } else if (!result) {
+        res.send({ message: 'Data not found' })
+      } else {
+        pool_whm.then(pool => {
+          pool.request()
+          .input('newPassword', req.body.newpassword)
+          .input('userName', req.body.username)
+          .query(`UPDATE klink_whm_testing.dbo.MASTER_COURIER SET PASSWORD = @newPassword WHERE USERNAME = @userName`, (err, result) => {
+            if (err) {
+              throw err;
+            } else if (!result) {
+              res.status(500).send({ message: 'Whoops! Something went wrong' })
+            }
+            res.json({ message: 'Success updated password' });
+          })
+        })
+      }
+      return ps.unprepare();
     })
   })
 }
 
 // get list stockies for form do manual wms (testing)
-exports.stockies = (req, res) => {
+export function stockies(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
     pool.request()
@@ -276,34 +334,26 @@ exports.stockies = (req, res) => {
 }
 
 // get list DO where ID_STOCKIES AND TANGGAL_DO
-exports.listDO = (req, res) => {
+export function listDO(req, res) {
+  let token = getItem('Authorization');
+  let verify = _verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Access-Control-Allow-Origin', '*');
-
-  let id_stockies = req.body.id_stockies;
-  let tgl_awal = req.body.tgl_awal;
-  let tgl_akhir = req.body.tgl_akhir;
-  let ekspedisi = req.body.ekspedisi;
-
   pool_whm.then(pool => {
     pool.request()
-      .query(`SELECT A.ID_DO, A.NO_DO, A.NAMA, A.NO_RESI, A.ALAMAT1, 
-          CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
-          A.ID_WAREHOUSE, B.WAREHOUSE_NAME
+    .input('stockistId', req.body.id_stockies)
+    .input('startDate', req.body.tgl_awal)
+    .input('endDate', req.body.tgl_akhir)
+    .input('expedition', req.body.ekspedisi)
+    .query(`SELECT A.ID_DO, A.NO_DO, A.NAMA, A.NO_RESI, A.ALAMAT1,
+      CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
+      A.ID_WAREHOUSE, B.WAREHOUSE_NAME
       FROM klink_whm.dbo.T_DO A
       LEFT JOIN klink_whm.dbo.MASTER_WAREHOUSE B ON A.ID_WAREHOUSE = B.ID_WAREHOUSE
-      WHERE A.ID_STOCKIES = '${id_stockies}' AND A.IS_FAILED = '0' AND A.ID_COURIER = '${ekspedisi}'
-      AND A.CREATED_DATE BETWEEN '${tgl_awal}' AND '${tgl_akhir}'`, (err, result) => {
-        if (err) throw err
-        res.json(result.recordset)
-      })
+      WHERE A.ID_STOCKIES = @stockistId AND A.IS_FAILED = '0' AND A.ID_COURIER = @expedition
+      AND A.CREATED_DATE BETWEEN @startDate AND @endDate`, (err, result) => {
+        if (err) throw err;
+        res.json(result.recordset);
+    })
   })
 }
-
-
-
-
-
-
-
-
-

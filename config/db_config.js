@@ -23,5 +23,6 @@ const pool_mlm = new sql.ConnectionPool(config_mlm).connect();
 
 module.exports = {
   pool_whm,
-  pool_mlm
+  pool_mlm,
+  sql
 };
