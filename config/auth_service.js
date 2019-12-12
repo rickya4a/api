@@ -1,6 +1,6 @@
-const fs = require('fs');
-const path = require('path');
-const jwt = require('jsonwebtoken');
+const fs = require('fs')
+const path = require('path')
+const jwt = require('jsonwebtoken')
 
 // -- key -- //
 const pvtKey = fs.readFileSync(path.resolve(__dirname, '../key/private.key'))

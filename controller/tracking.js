@@ -1,19 +1,24 @@
-const jwt = require('jsonwebtoken'),
-  localStorage = require('localStorage'),
-  { pool_whm, pool_mlm, sql } = require('../config/db_config');
+const localStorage = require('localStorage'),
+  { pool_whm, pool_mlm, sql } = require('../config/db_config'),
+  auth = require('../config/auth_service'),
+  Base64 = require('js-base64').Base64;
 
-exports.index = (req, res, err) => { // urutan paramnya harus req, res
+exports.index = (req, res) => { // urutan paramnya harus req, res
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_mlm.then(pool => {
     pool.request()
-      .query('SELECT TOP 10 * FROM bbhdr', (err, result) => {
-      if (err) throw err
-      res.json(result.recordset)
+    .query('SELECT TOP 10 * FROM bbhdr', (err, result) => {
+      if (err) throw err;
+      res.json(result.recordset);
     })
   })
 }
 
 exports.tracking = (req, res) => {
+  let token = localStorage.getItem('Authorization');
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+  res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   console.log('test');
   return pool_whm.then(pool => {
@@ -25,18 +30,17 @@ exports.tracking = (req, res) => {
   })
 }
 
-exports.getDetail = (req, res) => {
+exports.getDetail = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()
-    .input('noDo', req.params.NO_DO)
-    .input('courier', localStorage.getItem('kurir'))
-    .query(`SELECT a.ID_DO, a.NO_DO, a.ID_COURIER, a.ID_STOCKIES, a.NAMA, a.ALAMAT1, a.ID_WAREHOUSE, a.NO_RESI,
+      .input('noDo', req.params.NO_DO)
+      .input('courier', localStorage.getItem('kurir'))
+      .query(`SELECT a.ID_DO, a.NO_DO, a.ID_COURIER, a.ID_STOCKIES, a.NAMA, a.ALAMAT1, a.ID_WAREHOUSE, a.NO_RESI,
     b.NAMA, c.NAMA_STOCKIES, c.CODE_STOCKIES, d.WAREHOUSE_NAME
     FROM T_DO a
     LEFT JOIN COURIER b on a.ID_COURIER = b.ID
@@ -44,24 +48,26 @@ exports.getDetail = (req, res) => {
     LEFT JOIN MASTER_WAREHOUSE d on a.ID_WAREHOUSE = d.ID_WAREHOUSE
     WHERE a.NO_DO = @noDo AND a.ID_COURIER = @courier;
     SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY, BERAT, KOLI
-    FROM T_TRACKING_DO WHERE NO_DO = @noDo ORDER BY CREATED_DATE DESC`, (err, result) => {
-        if (err) {
-          throw err
-        } else if (!result.recordsets) {
-          res.send({ values: null, message: 'Data not found' })
-        } else {
-          res.json(result.recordsets)
-        }
-    })
+    FROM T_TRACKING_DO WHERE NO_DO = @noDo ORDER BY CREATED_DATE DESC`, err => {
+        if (err) throw err;
+        ps.execute({ noDo: req.params.NO_DO, courier: localStorage.getItem('kurir') }, (err, result) => {
+          if (err) {
+            throw err;
+          } else if (!result.recordsets) {
+            res.send({ values: null, message: 'Data not found' });
+          } else {
+            res.json(result.recordsets);
+          }
+          return ps.unprepare();
+        })
+      })
   })
 }
 
-exports.findTracking = (req, res) => {
+exports.findTracking = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  let no_do = req.params.NO_DO;
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
@@ -80,11 +86,10 @@ exports.findTracking = (req, res) => {
   })
 }
 
-exports.insertData = (req, res) => {
+exports.insertData = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if (!req.headers.authorization) {
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
 
@@ -109,7 +114,7 @@ exports.insertData = (req, res) => {
   })
 }
 
-exports.findCourier = (req, res) => {
+exports.findCourier = async (req, res) => {
   let username = req.body.username;
   let password = req.body.password;
 
@@ -128,18 +133,22 @@ exports.findCourier = (req, res) => {
         let nama = { name: result.recordset[0].NAME }
         let kurir = result.recordset[0].PARENT_COURIER;
         let username = result.recordset[0].USERNAME;
-        const token = jwt.sign(nama, password);
-        res.setHeader('Authorization', token)
-        localStorage.setItem('Authorization', token)
-        localStorage.setItem('kurir', kurir)
-        localStorage.setItem('username', username)
-        res.json({ user: result.recordset, token: token })
+        const token = auth.sign(payload, 'k-tracking');
+        res.setHeader('Authorization', `Bearer ${token}`);
+        localStorage.setItem('Authorization', token);
+        localStorage.setItem('kurir', kurir);
+        localStorage.setItem('username', username);
+        res.json({ user: result.recordset, token: token });
       }
     })
   })
 }
 
-exports.getTrackingKnetStockis = (req, res) => {
+exports.getTrackingKnetStockis = async (req, res) => {
+  // -- disable temporarily since K-Net have not implemented JWT token -- //
+  /* let token = localStorage.getItem('Authorization');
+  if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
+  res.setHeader('Authorization', `Bearer ${token}`); */
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_mlm.then(pool => {
     pool.request()
@@ -181,7 +190,7 @@ exports.getTrackingKnetStockis = (req, res) => {
   })
 }
 
-exports.getTrackingKnetInv = (req, res) => {
+exports.getTrackingKnetInv = async (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()
@@ -218,12 +227,10 @@ exports.getTrackingKnetInv = (req, res) => {
   })
 }
 
-exports.getDataCourier = (req, res) => {
+exports.getDataCourier = async (req, res) => {
   let token = localStorage.getItem('Authorization');
-  if(!req.headers.authorization){
-    return res.status(401).json({ message: 'Ga boleh masuk'});
-  }
-  //post username and password from client side
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
@@ -244,8 +251,11 @@ exports.getDataCourier = (req, res) => {
   })
 }
 
-exports.updatePassCourier = (req, res) => {
-  //set header auth
+exports.updatePassCourier = async (req, res) => {
+  let token = localStorage.getItem('Authorization');
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+  res.setHeader('Authorization', `Bearer ${token}`);
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()
@@ -263,7 +273,7 @@ exports.updatePassCourier = (req, res) => {
 }
 
 // get list stockies for form do manual wms (testing)
-export async function stockies(req, res) {
+exports.stockies = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const pool = await pool_whm;
   pool.request()
@@ -276,6 +286,9 @@ export async function stockies(req, res) {
 
 // get list DO where ID_STOCKIES AND TANGGAL_DO
 exports.listDO = (req, res) => {
+  let token = localStorage.getItem('Authorization');
+  let verify = auth.verify(token, 'k-tracking');
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Access-Control-Allow-Origin', '*');
   pool_whm.then(pool => {
     pool.request()
