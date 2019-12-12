@@ -8,15 +8,13 @@ const { pool_whm, pool_mlm } = require('../config/db_config')
  *
  * @return  {array}
  */
-exports.selectDate = function(req, res) {
+exports.selectDate = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let tglawal = req.params.tglawal;
-  let tglakhir = req.params.tglakhir;
-  console.log(tglawal);
-  console.log(tglakhir);
   return pool_mlm.then(pool => {
     pool.request()
-      .query(`SELECT createdt FROM getpinaple WHERE createdt BETWEEN '${tglawal}' AND '${tglakhir}' GROUP BY createdt`, (err, result) => {
+      .input('startDate', req.params.tglawal)
+      .input('endDate', req.params.tglakhir)
+      .query(`SELECT createdt FROM getpinaple WHERE createdt BETWEEN @startDate AND @endDate GROUP BY createdt`, (err, result) => {
       if (err) throw err
       res.json(result.recordset)
     })
@@ -25,10 +23,10 @@ exports.selectDate = function(req, res) {
 
 exports.countDate = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let tanggal = req.params.tanggal;
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT COUNT(*) as JUMT FROM klink_whm_testing.dbo.T_SALESSIMULATION WHERE TRANSAKSI_DATE = '${tanggal}'`, 
+    .input('date', req.params.tanggal)
+    .query(`SELECT COUNT(*) as JUMT FROM klink_whm_testing.dbo.T_SALESSIMULATION WHERE TRANSAKSI_DATE = @date`, 
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -38,10 +36,10 @@ exports.countDate = (req, res) => {
 
 exports.selectKWByDate = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let tanggal = req.params.tanggal;
   pool_mlm.then(pool => {
     pool.request()
-    .query(`SELECT * FROM klink_mlm2010.dbo.getpinaple WHERE createdt = '${tanggal}'`, 
+    .input('date', req.params.tanggal)
+    .query(`SELECT * FROM klink_mlm2010.dbo.getpinaple WHERE createdt = @date`, 
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -51,10 +49,10 @@ exports.selectKWByDate = (req, res) => {
 
 exports.checkStkWms = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let code_stockies = req.params.code_stockies;
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT COUNT(*) AS STOKIES FROM klink_whm_testing.dbo.MASTER_STOCKIES WHERE CODE_STOCKIES = '${code_stockies}'`, 
+    .input('codeStockist', req.params.code_stockies)
+    .query(`SELECT COUNT(*) AS STOKIES FROM klink_whm_testing.dbo.MASTER_STOCKIES WHERE CODE_STOCKIES = @codeStockist`, 
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -64,10 +62,10 @@ exports.checkStkWms = (req, res) => {
 
 exports.checkStkMssc = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let loccd = req.params.loccd;
   pool_mlm.then(pool => {
     pool.request()
-    .query(`SELECT loccd, fullnm, addr1 FROM klink_mlm2010.dbo.mssc WHERE loccd = '${loccd}'`, 
+    .input('loccd', req.params.loccd)
+    .query(`SELECT loccd, fullnm, addr1 FROM klink_mlm2010.dbo.mssc WHERE loccd = @loccd`, 
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -77,17 +75,16 @@ exports.checkStkMssc = (req, res) => {
 
 exports.insertStkWms = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  
-  let id_stockies = req.body.id_stockies;
-  let nama_stockies = req.body.nama_stockies;
-  let code_stockies = req.body.code_stockies;
-  let alamat_stockies = req.body.alamat_stockies;
-  let created_date = req.body.created_date;
  
   pool_whm.then(pool => {
     pool.request()
+    .input('stockistId', req.body.id_stockies)
+    .input('stockistName', req.body.nama_stockies)
+    .input('stockistId', req.body.code_stockies)
+    .input('stockistAddress', req.body.alamat_stockies)
+    .input('createdDate', req.body.created_date)
     .query(`INSERT INTO klink_whm_testing.dbo.MASTER_STOCKIES (ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES, ALAMAT_STOCKIES, IS_ACTIVE, CREATED_DATE, CREATED_BY) 
-    VALUES ('${id_stockies}', '${nama_stockies}', '${code_stockies}', '${alamat_stockies}', '0', '${created_date}', 'system')`,
+    VALUES (@stockistId, @stockistName, @stockistId', @stockistAddress, '0', @createdDate, 'system')`,
     (err, result) => {
       if (err) throw err
       res.send({ message: 'Success insert data' })
@@ -97,11 +94,10 @@ exports.insertStkWms = (req, res) => {
 
 exports.countProdukAlias = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let alias_code = req.params.alias_code;
-  
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT COUNT(*) AS ALIAS FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS WHERE ALIAS_CODE = '${alias_code}'`,
+    .input('codeAlias', req.params.alias_code)
+    .query(`SELECT COUNT(*) AS ALIAS FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS WHERE ALIAS_CODE = @codeAlias`,
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -111,11 +107,10 @@ exports.countProdukAlias = (req, res) => {
 
 exports.selectProdukAlias = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let alias_code = req.params.alias_code;
-
   pool_whm.then(pool => {
     pool.request()
-    .query(`SELECT ALIAS_CODE, PRODUK_ALIAS_ID FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS WHERE ALIAS_CODE = '${alias_code}'`,
+    .input('codeAlias', req.params.alias_code)
+    .query(`SELECT ALIAS_CODE, PRODUK_ALIAS_ID FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS WHERE ALIAS_CODE = @codeAlias`,
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
@@ -125,23 +120,22 @@ exports.selectProdukAlias = (req, res) => {
 
 exports.insertKWStk = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let id_salessimulation = req.body.id_salessimulation;
-  let id_warehouse = req.body.id_warehouse;
-  let id_stockies = req.body.id_stockies;
-  let kwitansi_no = req.body.kwitansi_no;
-  let produk_alias_id = req.body.produk_alias_id;
-  let qty = req.body.qty;
-  let created_date = req.body.created_date;
-  let transaksi_date = req.body.transaksi_date;
-  let qty_sisa = req.body.qty_sisa;
-  
   pool_whm.then(pool => {
     pool.request()
+    .input('salesSimulationId', req.body.id_salessimulation)
+    .input('warehouseId', req.body.id_warehouse)
+    .input('stockistId', req.body.id_stockies)
+    .input('receiptNo', req.body.kwitansi_no)
+    .input('aliasId', req.body.produk_alias_id)
+    .input('qty', req.body.qty)
+    .input('dateCreated', req.body.created_date)
+    .input('transactionDate', req.body.transaksi_date)
+    .input('restQty', req.body.qty_sisa)
     .query(`INSERT INTO klink_whm_testing.dbo.T_SALESSIMULATION 
     (ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES, KWITANSI_NO, PRODUK_ALIAS_ID, QTY, CREATED_DATE, 
     TRANSAKSI_DATE, QTY_SEND, QTY_SISA, IS_INDENT, TIPE) 
-    VALUES('${id_salessimulation}', '${id_warehouse}', '${id_stockies}', '${kwitansi_no}', '${produk_alias_id}', 
-    '${qty}', '${created_date}', '${transaksi_date}', '0', '${qty_sisa}', '0', 'S')`, 
+    VALUES(@salesSimulationId, @warehouseId, @stockistId, @receiptNo, @aliasId, 
+    @qty, @dateCreated, @transactionDate, '0', @restQty, '0', 'S')`, 
     (err, result) => {
       if (err) throw err
       res.send({ message: 'Success insert data' })
@@ -151,23 +145,22 @@ exports.insertKWStk = (req, res) => {
 
 exports.insertKWInv = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let id_salessimulation = req.body.id_salessimulation;
-  let id_warehouse = req.body.id_warehouse;
-  let id_stockies = req.body.id_stockies;
-  let kwitansi_no = req.body.kwitansi_no;
-  let produk_alias_id = req.body.produk_alias_id;
-  let qty = req.body.qty;
-  let created_date = req.body.created_date;
-  let transaksi_date = req.body.transaksi_date;
-  let qty_sisa = req.body.qty_sisa;
-  
   pool_whm.then(pool => {
     pool.request()
+    .input('salesSimulationId', req.body.id_salessimulation)
+    .input('warehouseId', req.body.id_warehouse)
+    .input('stockistId', req.body.id_stockies)
+    .input('receiptNo', req.body.kwitansi_no)
+    .input('aliasId', req.body.produk_alias_id)
+    .input('qty', req.body.qty)
+    .input('dateCreated', req.body.created_date)
+    .input('transactionDate', req.body.transaksi_date)
+    .input('restQty', req.body.qty_sisa)
     .query(`INSERT INTO klink_whm_testing.dbo.T_SALESSIMULATION 
     (ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES, KWITANSI_NO, PRODUK_ALIAS_ID, QTY, CREATED_DATE, 
     TRANSAKSI_DATE, QTY_SEND, QTY_SISA, IS_INDENT, TIPE) 
-    VALUES('${id_salessimulation}', '${id_warehouse}', '${id_stockies}', '${kwitansi_no}', '${produk_alias_id}', 
-    '${qty}', '${created_date}', '${transaksi_date}', '0', '${qty_sisa}', '0', 'I')`, 
+    VALUES(@salesSimulationId, @warehouseId, @stockistId, @receiptNo, @aliasId, 
+    @qty, @dateCreated, @transactionDate, '0', @restQty, '0', 'I')`, 
     (err, result) => {
       if (err) throw err
       res.send({ message: 'Success insert data' })
@@ -177,15 +170,15 @@ exports.insertKWInv = (req, res) => {
 
 exports.getRePinaple = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  let tanggal = req.params.tanggal;
-
+  
   pool_mlm.then(pool => {
     pool.request()
+    .input('date', req.params.tanggal)
     .query(`SELECT * FROM klink_mlm2010.dbo.getpinaple 
-    WHERE createdt = '${tanggal}' 
+    WHERE createdt = @date' 
     AND trcd COLLATE SQL_Latin1_General_CP1_CI_AS NOT  IN  
     (SELECT KWITANSI_NO COLLATE SQL_Latin1_General_CP1_CI_AS 
-    FROM klink_whm_testing.dbo.T_SALESSIMULATION WHERE TRANSAKSI_DATE = '${tanggal}')`, 
+    FROM klink_whm_testing.dbo.T_SALESSIMULATION WHERE TRANSAKSI_DATE = @date')`, 
     (err, result) => {
       if (err) throw err
       res.json(result.recordset)
