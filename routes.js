@@ -1,4 +1,4 @@
-module.exports = function(app) {
+export default (app) => {
 
   // ---- all controllers here ---- //
   const tracking = require('./controller/tracking');
