@@ -49,17 +49,18 @@ exports.getDetail = async (req, res) => {
     WHERE a.NO_DO = @noDo AND a.ID_COURIER = @courier;
     SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY, BERAT, KOLI
     FROM T_TRACKING_DO WHERE NO_DO = @noDo ORDER BY CREATED_DATE DESC`, err => {
-    if (err) throw err;
-    ps.execute({ noDo: req.params.NO_DO, courier: localStorage.getItem('kurir') }, (err, result) => {
-      if (err) {
-        throw err;
-      } else if (!result.recordsets) {
-        res.send({ values: null, message: 'Data not found' });
-      } else {
-        res.json(result.recordsets);
-      }
-      return ps.unprepare();
-    })
+        if (err) throw err;
+        ps.execute({ noDo: req.params.NO_DO, courier: localStorage.getItem('kurir') }, (err, result) => {
+          if (err) {
+            throw err;
+          } else if (!result.recordsets) {
+            res.send({ values: null, message: 'Data not found' });
+          } else {
+            res.json(result.recordsets);
+          }
+          return ps.unprepare();
+        })
+      })
   })
 }
 
