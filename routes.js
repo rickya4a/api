@@ -1,11 +1,13 @@
-module.exports = function(app) {
+/**
+ * Bring all controllers here
+ */
+import * as tracking from './controller/tracking';
+import * as pineapple from './controller/importPineapple';
+import * as initiateDO from './controller/initiateDO';
+import * as createDO from './controller/createDO';
+import * as k_net from './controller/k_net';
 
-  // ---- all controllers here ---- //
-  const tracking = require('./controller/tracking');
-  const pineapple = require('./controller/importPineapple');
-  const initiateDO = require('./controller/initiateDO');
-  const createDO = require('./controller/createDO');
-  // ---- end controllers here ---- //
+export default (app) => {
 
   // routes tracking
   app.route('/')
@@ -39,10 +41,13 @@ module.exports = function(app) {
     .put(tracking.updatePassCourier);
 
   app.route('/getListStk')
-    .get(tracking.stockies);
+    .post(tracking.stockies);
 
   app.route('/listDO')
     .post(tracking.listDO);
+
+  app.route('/getDoByDate')
+    .post(tracking.getDoByDate);
 
   // routes pineapple
   app.route('/selectDate/:tglawal/:tglakhir')
@@ -77,9 +82,6 @@ module.exports = function(app) {
 
   app.route('/getRePinaple/:tanggal')
     .get(pineapple.getRePinaple);
-
-  app.route('/bbhdr')
-    .get(pineapple.bbhdr);
 
   // route initiate DO
   app.route('/getHeaderInitDO/:idstockies')
@@ -139,7 +141,7 @@ module.exports = function(app) {
     .get(createDO.getListIndent)
 
   app.route('/getMasterProduct/:id_product')
-    .get(createDO.getMasterProduct)  
+    .get(createDO.getMasterProduct)
 
   app.route('/checkBox/:id_warehouse/:id_product')
     .get(createDO.checkBox)
@@ -161,5 +163,8 @@ module.exports = function(app) {
 
   app.route('/checkProductIndent/:kw/:produk_alias_id')
     .get(createDO.checkProductIndent)
-    
+
+  app.route('/jatis-message')
+  .get(k_net.jatisMessage)
+
 }

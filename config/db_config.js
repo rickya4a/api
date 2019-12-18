@@ -2,7 +2,7 @@
  * Global connection pool to connect every single
  * database
  */
-const sql = require('mssql');
+import { ConnectionPool } from 'mssql';
 
 const config_whm = {
   user: 'sa',
@@ -17,12 +17,14 @@ const config_mlm = {
   database: 'klink_mlm2010',
   requestTimeout: 50000
 };
-
-const pool_whm = new sql.ConnectionPool(config_whm).connect();
-const pool_mlm = new sql.ConnectionPool(config_mlm).connect();
-
-module.exports = {
-  pool_whm,
-  pool_mlm,
-  sql
+const config_ecommerce = {
+  user: 'sa',
+  password: 'QwertY@123',
+  server: '192.168.22.3',
+  database: 'db_ecommerce',
+  requestTimeout: 50000
 };
+
+export const pool_whm = new ConnectionPool(config_whm).connect();
+export const pool_mlm = new ConnectionPool(config_mlm).connect();
+export const pool_ecommerce = new ConnectionPool(config_ecommerce).connect();
