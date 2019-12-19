@@ -1,6 +1,6 @@
 import localStorage from 'localStorage';
 import { pool_whm, pool_mlm } from '../config/db_config';
-import { PreparedStatement, VarChar, DateTime } from 'mssql';
+import { PreparedStatement, VarChar } from 'mssql';
 import { verify as _verify, sign } from '../config/auth_service';
 import { Base64 } from 'js-base64';
 
