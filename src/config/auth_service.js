@@ -3,8 +3,8 @@ const path = require('path');
 const jwt = require('jsonwebtoken');
 
 // -- key -- //
-const pvtKey = fs.readFileSync(path.resolve(__dirname, '../key/private.key'))
-const pubKey = fs.readFileSync(path.resolve(__dirname, '../key/public.key'))
+const pvtKey = fs.readFileSync(path.resolve(__dirname, '../../key/private.key'))
+const pubKey = fs.readFileSync(path.resolve(__dirname, '../../key/public.key'))
 
 module.exports = {
   sign: (payload, app) => {

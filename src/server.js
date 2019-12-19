@@ -2,6 +2,7 @@ import express from 'express';
 import { urlencoded, json } from 'body-parser';
 import cors from 'cors';
 import routes from './routes';
+import "@babel/polyfill"
 const app = express();
 
 app.use(urlencoded({ extended: true}));

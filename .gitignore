@@ -4,3 +4,4 @@ key/
 Dockerfile
 .vscode/
 .vscode/sftp.json
+dist/
