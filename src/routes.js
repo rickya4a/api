@@ -41,7 +41,7 @@ export default (app) => {
     .put(tracking.updatePassCourier);
 
   app.route('/getListStk')
-    .post(tracking.stockies);
+    .get(tracking.stockies);
 
   app.route('/listDO')
     .post(tracking.listDO);
