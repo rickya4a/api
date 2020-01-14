@@ -30,13 +30,15 @@ export async function jatisMessage(req, res) {
           .input('datereceived', req.query.datereceived)
           .query(`INSERT INTO db_ecommerce.dbo.ecomm_wa_cod_confirm (
             orderno, messageId, deliverystatus, datehit, datereceived)
-          VALUES (
-            @orderno, @messageId, @deliverystatus, @datehit, @datereceived)`,
-          (err, result) => {
+            VALUES (
+            @orderno, @messageId, @deliverystatus,
+            @datehit, @datereceived)`, (err, result) => {
             if (err) {
               throw err;
             } else if (!result) {
-              res.status(500).send({ message: 'Whoops! Something went wrong' })
+              res.status(500).send({
+                message: 'Whoops! Something went wrong'
+              });
             }
             res.status(200);
           })

@@ -54,7 +54,8 @@ export async function checkAliasProdSingle(req, res) {
   .prepare(`SELECT COUNT(PRODUK_ALIAS_ID) AS JUM
   FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS a
   JOIN klink_whm_testing.dbo.MASTER_PRODUK b ON b.ID_PRODUCT = a.ID_PRODUCT
-  where PRODUK_ALIAS_ID = @alias AND a.IS_BUNDLE = 0 AND a.IS_ACTIVE = 0`, err => {
+  where PRODUK_ALIAS_ID = @alias
+  AND a.IS_BUNDLE = 0 AND a.IS_ACTIVE = 0`, err => {
     if (err) throw err;
     ps.execute({ alias: req.params.alias }, (err, result) => {
       if (err) {
@@ -159,7 +160,8 @@ export async function processKW(req, res) {
   FROM klink_whm_testing.dbo.T_SALESSIMULATION A
   LEFT JOIN klink_whm_testing.dbo.MASTER_PRODUK_ALIAS B
   ON A.PRODUK_ALIAS_ID = B.PRODUK_ALIAS_ID
-  WHERE B.IS_BUNDLE = 1 AND A.KWITANSI_NO = @receiptNo AND A.IS_BUNDLED = '0'`, err => {
+  WHERE B.IS_BUNDLE = 1 AND A.KWITANSI_NO = @receiptNo
+  AND A.IS_BUNDLED = '0'`, err => {
     if (err) throw err;
     ps.execute({ receiptNo: req.params.kw }, (err, result) => {
       if (err) {
@@ -178,10 +180,13 @@ export async function updateFlagProdBundling(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
   ps.input('salessimulationId', sql.VarChar)
-  .prepare(`UPDATE klink_whm_testing.dbo.T_SALESSIMULATION SET IS_BUNDLED = 1, IS_ACTIVE = 1
+  .prepare(`UPDATE klink_whm_testing.dbo.T_SALESSIMULATION
+  SET IS_BUNDLED = 1, IS_ACTIVE = 1
   WHERE ID_SALESSIMULATION = @salessimulationId`, err => {
     if (err) throw err;
-    ps.execute({ salessimulationId: req.params.idsalessimulation }, (err, result) => {
+      ps.execute({
+        salessimulationId: req.params.idsalessimulation
+      }, (err, result) => {
       if (err) {
         throw err;
       } else if (!result.recordset) {
@@ -265,7 +270,10 @@ export async function checkDuplicateAlias(req, res) {
   .prepare(`SELECT * FROM klink_whm_testing.dbo.T_SALESSIMULATION
   WHERE KWITANSI_NO = @receiptNo AND PRODUK_ALIAS_ID = @alias`, err => {
     if (err) throw err;
-    ps.execute({ alias: req.params.alias, receiptNo: req.params.kw }, (err, result) => {
+      ps.execute({
+        alias: req.params.alias,
+        receiptNo: req.params.kw
+      }, (err, result) => {
       if (err) {
         throw err;
       } else if (!result.recordset) {
@@ -284,7 +292,8 @@ export async function updateQtyDuplicateAlias(req, res) {
   ps.input('salessimulationId', sql.VarChar)
   .input('qty', sql.VarChar)
   .prepare(`UPDATE klink_whm_testing.dbo.T_SALESSIMULATION
-  SET QTY = @qty, QTY_SISA = @qty WHERE ID_SALESSIMULATION = @salessimulationId`, err => {
+  SET QTY = @qty, QTY_SISA = @qty
+  WHERE ID_SALESSIMULATION = @salessimulationId`, err => {
     if (err) throw err;
     ps.execute({
       salessimulationId: req.params.idsalessimulation,

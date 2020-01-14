@@ -26,7 +26,8 @@ export function tracking(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
     pool.request()
-      .query(`SELECT ID_DO, NO_DO, STATUS, CONVERT(VARCHAR(30), TANGGAL, 20) AS TANGGAL,
+      .query(`SELECT ID_DO, NO_DO, STATUS,
+      CONVERT(VARCHAR(30), TANGGAL, 20) AS TANGGAL,
       CREATED_BY FROM T_TRACKING_DO`, (err, result) => {
       if (err) throw err;
       res.json(result.recordset);
@@ -61,9 +62,13 @@ export async function getDetail(req, res) {
     WHERE a.NO_DO = @noDo AND a.ID_COURIER = @courier;
     SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20)
     AS CREATED_DATE, CREATED_BY, BERAT, KOLI
-    FROM T_TRACKING_DO WHERE NO_DO = @noDo ORDER BY CREATED_DATE DESC`, err => {
+    FROM T_TRACKING_DO WHERE NO_DO = @noDo ORDER BY CREATED_DATE DESC`,
+    err => {
     if (err) throw err;
-    ps.execute({ noDo: req.params.NO_DO, courier: req.body.kurir }, (err, result) => {
+      ps.execute({
+        noDo: req.params.NO_DO,
+        courier: req.body.kurir
+      }, (err, result) => {
       if (err) {
         throw err;
       } else if (!result.recordsets) {
@@ -92,7 +97,8 @@ export async function findTracking(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('noDo', VarChar)
-  .prepare(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE,
+  .prepare(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30),
+    CREATED_DATE, 20) AS CREATED_DATE,
     CREATED_BY from T_TRACKING_DO WHERE NO_DO = @noDo`, err => {
     if (err) throw err;
     ps.execute({ noDo: req.params.NO_DO }, (err, result) => {
@@ -136,7 +142,7 @@ export async function insertData(req, res) {
   .prepare(`INSERT INTO T_TRACKING_DO (
       ID_DO, NO_DO, TANGGAL, STATUS, CREATED_DATE,
       CREATED_BY, ID_WAREHOUSE, ID_TRACKING, BERAT, KOLI)
-    VALUES (
+      VALUES (
       @doId, @noDo, CONVERT(VARCHAR(30), @date, 20),
       @status, CONVERT(VARCHAR(30), @dateCreated, 20),
       @createdBy, @warehouseId, @trackingId, @weight, @batch)`, err => {
@@ -176,12 +182,14 @@ export async function insertData(req, res) {
 export async function findCourier(req, res) {
   let username = req.body.username;
   let password = req.body.password;
-  if (req.body.appkey != 'k-tracking') return res.status(401).json({ message: 'Unauthorized'});
+  if (req.body.appkey != 'k-tracking')
+    return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('userName', VarChar)
   .input('password', VarChar)
-  .prepare(`SELECT ID_COURIER, USERNAME, PASSWORD, ID_USERROLE, PARENT_COURIER, NAME
+  .prepare(`SELECT ID_COURIER, USERNAME, PASSWORD,
+    ID_USERROLE, PARENT_COURIER, NAME
     FROM klink_whm_testing.dbo.MASTER_COURIER
     WHERE USERNAME = @userName AND PASSWORD = @password`, err => {
     if (err) throw err;
@@ -227,10 +235,13 @@ export async function getTrackingKnetStockis(req, res) {
   ps.input('trcd', VarChar)
   .prepare(`SELECT TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt,
     CONVERT(VARCHAR(10), a.batchdt, 120) as batchdt, a.createdt, a.createnm,
-      a.dfno, a.distnm, a.loccd, a.loccdnm, a.tdp, a.tbv, a.bnsperiod, b.createnm as cnms_createnm,
+      a.dfno, a.distnm, a.loccd, a.loccdnm, a.tdp,
+      a.tbv, a.bnsperiod, b.createnm as cnms_createnm,
     CONVERT(VARCHAR(10), b.createdt, 120) as cnms_createdt, b.receiptno,
-      c.createdt as kw_date, c.createnm as kw_createnm, d.GDO, e.createnm as gdo_createnm,
-    CONVERT(VARCHAR(10), e.etdt, 120) as gdo_createdt, e.shipto, f.ID_DO, g.NO_DO
+      c.createdt as kw_date, c.createnm as kw_createnm,
+      d.GDO, e.createnm as gdo_createnm,
+    CONVERT(VARCHAR(10), e.etdt, 120) as gdo_createdt,
+      e.shipto, f.ID_DO, g.NO_DO
     FROM klink_mlm2010.dbo.V_HILAL_CHECK_BV_ONLINE_HDR a
     LEFT OUTER JOIN klink_mlm2010.dbo.ordivtrh b
     ON (a.invoiceno = b.invoiceno)
@@ -241,9 +252,11 @@ export async function getTrackingKnetStockis(req, res) {
     LEFT OUTER JOIN klink_mlm2010.dbo.gdohdr e
     ON (d.GDO = e.trcd)
     LEFT OUTER JOIN klink_whm.dbo.T_DETAIL_DO f
-    ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno COLLATE SQL_Latin1_General_CP1_CS_AS)
+    ON (f.NO_KWITANSI COLLATE SQL_Latin1_General_CP1_CS_AS = b.receiptno
+       COLLATE SQL_Latin1_General_CP1_CS_AS)
     LEFT OUTER JOIN klink_whm.dbo.T_DO g
-    ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS)
+    ON (g.ID_DO COLLATE SQL_Latin1_General_CP1_CS_AS = f.ID_DO
+       COLLATE SQL_Latin1_General_CP1_CS_AS)
     WHERE a.trcd = @trcd`, err => {
     if (err) throw err;
     ps.execute({ trcd: req.params.trcd }, (err, header) => {
@@ -258,14 +271,18 @@ export async function getTrackingKnetStockis(req, res) {
           .input('id_do', id_do)
           .query(`SELECT NO_DO, STATUS,
             CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
-            FROM T_TRACKING_DO where ID_DO = @id_do ORDER BY CREATED_DATE DESC`,
-            (err, tracking) => {
+            FROM T_TRACKING_DO
+            where ID_DO = @id_do
+            ORDER BY CREATED_DATE DESC`, (err, tracking) => {
             if (err) {
               throw err;
             } else if (!tracking.recordset) {
               res.send({ header: header.recordset, tracking: null });
             } else {
-              res.json({ header: header.recordset, tracking: tracking.recordset });
+              res.json({
+                header: header.recordset,
+                tracking: tracking.recordset
+              });
             }
           })
         })
@@ -314,15 +331,19 @@ export async function getTrackingKnetInv(req, res) {
           pool.request()
           .input('id_do', id_do)
           .query(`SELECT NO_DO, STATUS,
-              CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
-            FROM T_TRACKING_DO where ID_DO = @id_do ORDER BY CREATED_DATE DESC`,
-          (err, tracking) => {
+            CONVERT(VARCHAR(30), CREATED_DATE, 20) AS CREATED_DATE, CREATED_BY
+            FROM T_TRACKING_DO
+            WHERE ID_DO = @id_do
+            ORDER BY CREATED_DATE DESC`, (err, tracking) => {
             if (err) {
               throw err;
             } else if (!tracking.recordset) {
               res.send({ header: header.recordset, tracking: null });
             } else {
-              res.json({ header: header.recordset, tracking: tracking.recordset });
+              res.json({
+                header: header.recordset,
+                tracking: tracking.recordset
+              });
             }
           })
         })
@@ -349,10 +370,10 @@ export async function getDataCourier(req, res) {
   const ps = new PreparedStatement(await pool_whm);
   ps.input('userName', VarChar)
   .prepare(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE,
-            a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI
-            FROM klink_whm_testing.dbo.MASTER_COURIER a
-            INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID
-            WHERE a.USERNAME = @userName`, err => {
+    a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI
+    FROM klink_whm_testing.dbo.MASTER_COURIER a
+    INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID
+    WHERE a.USERNAME = @userName`, err => {
     if (err) throw err;
     ps.execute({ userName: req.params.username }, (err, result) => {
       if (err) {

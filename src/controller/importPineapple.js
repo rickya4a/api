@@ -36,8 +36,9 @@ export async function countDate(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
   ps.input('date', sql.VarChar)
-  .prepare(`SELECT COUNT(*) as JUMT FROM klink_whm_testing.dbo.T_SALESSIMULATION
-  WHERE TRANSAKSI_DATE = @date`, err => {
+  .prepare(`SELECT COUNT(*) as JUMT
+    FROM klink_whm_testing.dbo.T_SALESSIMULATION
+    WHERE TRANSAKSI_DATE = @date`, err => {
     if (err) throw err;
     ps.execute({ date: req.params.tanggal }, (err, result) => {
       if (err) {
