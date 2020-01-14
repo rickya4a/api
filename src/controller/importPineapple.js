@@ -77,8 +77,9 @@ export async function checkStkWms(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new sql.PreparedStatement(await pool_whm);
   ps.input('codeStockist', sql.VarChar)
-  .prepare(`SELECT COUNT(*) AS STOKIES FROM klink_whm_testing.dbo.MASTER_STOCKIES
-  WHERE CODE_STOCKIES = @codeStockist`, err => {
+  .prepare(`SELECT COUNT(*) AS STOKIES
+    FROM klink_whm_testing.dbo.MASTER_STOCKIES
+    WHERE CODE_STOCKIES = @codeStockist`, err => {
     if (err) throw err;
     ps.execute({ codeStockist: req.params.code_stockies }, (err, result) => {
       if (err) {
