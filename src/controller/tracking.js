@@ -510,7 +510,7 @@ export async function listDO(req, res) {
 export async function getDoByDate(req, res) {
   let token = localStorage.getItem('Authorization');
   let verify = _verify(token, 'k-tracking');
-  // if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('startDate', VarChar)
