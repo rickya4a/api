@@ -154,7 +154,8 @@ export async function countProdukAlias(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('codeAlias', VarChar)
-  .prepare(`SELECT COUNT(*) AS ALIAS FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS
+  .prepare(`SELECT COUNT(*) AS ALIAS FROM
+  klink_whm_testing.dbo.MASTER_PRODUK_ALIAS
   WHERE ALIAS_CODE = @codeAlias`, err => {
     if (err) throw err;
     ps.execute({ codeAlias: req.params.alias_code }, (err, result) => {
@@ -174,7 +175,8 @@ export async function selectProdukAlias(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('codeAlias', VarChar)
-  .prepare(`SELECT ALIAS_CODE, PRODUK_ALIAS_ID FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS
+  .prepare(`SELECT ALIAS_CODE, PRODUK_ALIAS_ID FROM
+  klink_whm_testing.dbo.MASTER_PRODUK_ALIAS
   WHERE ALIAS_CODE = @codeAlias`, err => {
     if (err) throw err;
     ps.execute({ codeAlias: req.params.alias_code }, (err, result) => {
@@ -203,13 +205,13 @@ export async function insertKWStk(req, res) {
   .input('transactionDate', VarChar)
   .input('restQty', VarChar)
   .prepare(`INSERT INTO klink_whm_testing.dbo.T_SALESSIMULATION (
-    ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES,
-    KWITANSI_NO, PRODUK_ALIAS_ID, QTY, CREATED_DATE,
-    TRANSAKSI_DATE, QTY_SEND, QTY_SISA, IS_INDENT, TIPE)
+  ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES,
+  KWITANSI_NO, PRODUK_ALIAS_ID, QTY, CREATED_DATE,
+  TRANSAKSI_DATE, QTY_SEND, QTY_SISA, IS_INDENT, TIPE)
   VALUES (
-    @salesSimulationId, @warehouseId, @stockistId, @receiptNo,
-    @aliasId, @qty, @dateCreated, @transactionDate, '0',
-    @restQty, '0', 'S')`, err => {
+  @salesSimulationId, @warehouseId, @stockistId, @receiptNo,
+  @aliasId, @qty, @dateCreated, @transactionDate, '0',
+  @restQty, '0', 'S')`, err => {
     if (err) throw err;
       ps.execute({
         salesSimulationId: req.body.id_salessimulation,
@@ -247,10 +249,10 @@ export async function insertKWInv(req, res) {
   .input('transactionDate', VarChar)
   .input('restQty', VarChar)
   .prepare(`INSERT INTO klink_whm_testing.dbo.T_SALESSIMULATION (
-    ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES, KWITANSI_NO, PRODUK_ALIAS_ID,
-    QTY, CREATED_DATE, TRANSAKSI_DATE, QTY_SEND, QTY_SISA, IS_INDENT, TIPE)
+  ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES, KWITANSI_NO, PRODUK_ALIAS_ID,
+  QTY, CREATED_DATE, TRANSAKSI_DATE, QTY_SEND, QTY_SISA, IS_INDENT, TIPE)
   VALUES (
-    @salesSimulationId, @warehouseId, @stockistId, @receiptNo, @aliasId,
+  @salesSimulationId, @warehouseId, @stockistId, @receiptNo, @aliasId,
   @qty, @dateCreated, @transactionDate, '0', @restQty, '0', 'I')`, err => {
     if (err) throw err;
       ps.execute({
@@ -284,7 +286,8 @@ export async function getRePinaple(req, res) {
   WHERE createdt = @date'
   AND trcd COLLATE SQL_Latin1_General_CP1_CI_AS NOT  IN
   (SELECT KWITANSI_NO COLLATE SQL_Latin1_General_CP1_CI_AS
-  FROM klink_whm_testing.dbo.T_SALESSIMULATION WHERE TRANSAKSI_DATE = @date')`, err => {
+  FROM klink_whm_testing.dbo.T_SALESSIMULATION
+  WHERE TRANSAKSI_DATE = @date')`, err => {
     if (err) throw err;
     ps.execute({ date: req.params.tanggal }, (err, result) => {
       if (err) {

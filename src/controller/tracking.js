@@ -191,7 +191,7 @@ export async function findCourier(req, res) {
   .input('password', VarChar)
   .prepare(`SELECT ID_COURIER, USERNAME, PASSWORD,
     ID_USERROLE, PARENT_COURIER, NAME
-    FROM klink_whm_testing.dbo.MASTER_COURIER
+    FROM MASTER_COURIER
     WHERE USERNAME = @userName AND PASSWORD = @password`, err => {
     if (err) throw err;
     ps.execute({ userName: username, password: password }, (err, result) => {
@@ -372,7 +372,7 @@ export async function getDataCourier(req, res) {
   ps.input('userName', VarChar)
   .prepare(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE,
     a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI
-    FROM klink_whm_testing.dbo.MASTER_COURIER a
+    FROM MASTER_COURIER a
     INNER JOIN COURIER b ON a.PARENT_COURIER = b.ID
     WHERE a.USERNAME = @userName`, err => {
     if (err) throw err;
@@ -407,7 +407,7 @@ export async function updatePassCourier(req, res) {
   ps.input('userName', VarChar)
   .input('oldPassword', VarChar)
   .input('newPassword', VarChar)
-  .prepare(`SELECT PASSWORD FROM klink_whm_testing.dbo.MASTER_COURIER
+  .prepare(`SELECT PASSWORD FROM MASTER_COURIER
   WHERE USERNAME = @userName AND PASSWORD = @oldPassword`, err => {
     if (err) throw err;
     ps.execute({
@@ -423,7 +423,7 @@ export async function updatePassCourier(req, res) {
           pool.request()
           .input('newPassword', req.body.newpassword)
           .input('userName', req.body.username)
-          .query(`UPDATE klink_whm_testing.dbo.MASTER_COURIER
+          .query(`UPDATE MASTER_COURIER
             SET PASSWORD = @newPassword WHERE USERNAME = @userName`,
           (err, result) => {
             if (err) {
