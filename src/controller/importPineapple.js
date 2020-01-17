@@ -1,4 +1,6 @@
-import { sql, pool_mlm, pool_whm } from '../config/db_config';
+import { pool_mlm, pool_whm } from '../config/db_config';
+import { PreparedStatement, VarChar } from 'mssql';
+import _ from 'lodash';
 
 /**
  * Get data date from database
@@ -10,9 +12,9 @@ import { sql, pool_mlm, pool_whm } from '../config/db_config';
  */
 export async function selectDate(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_mlm);
-  ps.input('startDate', sql.VarChar)
-  .input('endDate', sql.VarChar)
+  const ps = new PreparedStatement(await pool_mlm);
+  ps.input('startDate', VarChar)
+  .input('endDate', VarChar)
   .prepare(`SELECT createdt FROM getpinaple
   WHERE createdt BETWEEN @startDate AND @endDate GROUP BY createdt`, err => {
     if (err) throw err;
@@ -22,7 +24,7 @@ export async function selectDate(req, res) {
     }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordset);
@@ -34,8 +36,8 @@ export async function selectDate(req, res) {
 
 export async function countDate(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('date', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('date', VarChar)
   .prepare(`SELECT COUNT(*) as JUMT
     FROM klink_whm_testing.dbo.T_SALESSIMULATION
     WHERE TRANSAKSI_DATE = @date`, err => {
@@ -43,7 +45,7 @@ export async function countDate(req, res) {
     ps.execute({ date: req.params.tanggal }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordset);
@@ -55,15 +57,15 @@ export async function countDate(req, res) {
 
 export async function selectKWByDate(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_mlm);
-  ps.input('date', sql.VarChar)
+  const ps = new PreparedStatement(await pool_mlm);
+  ps.input('date', VarChar)
   .prepare(`SELECT * FROM klink_mlm2010.dbo.getpinaple
   WHERE createdt = @date`, err => {
     if (err) throw err;
     ps.execute({ date: req.params.tanggal }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordset);
@@ -75,8 +77,8 @@ export async function selectKWByDate(req, res) {
 
 export async function checkStkWms(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('codeStockist', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('codeStockist', VarChar)
   .prepare(`SELECT COUNT(*) AS STOKIES
     FROM klink_whm_testing.dbo.MASTER_STOCKIES
     WHERE CODE_STOCKIES = @codeStockist`, err => {
@@ -84,7 +86,7 @@ export async function checkStkWms(req, res) {
     ps.execute({ codeStockist: req.params.code_stockies }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordset);
@@ -96,15 +98,15 @@ export async function checkStkWms(req, res) {
 
 export async function checkStkMssc(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_mlm);
-  ps.input('loccd', sql.VarChar)
+  const ps = new PreparedStatement(await pool_mlm);
+  ps.input('loccd', VarChar)
   .prepare(`SELECT loccd, fullnm, addr1 FROM klink_mlm2010.dbo.mssc
   WHERE loccd = @loccd`, err => {
     if (err) throw err;
     ps.execute({ loccd: req.params.loccd }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordset);
@@ -116,12 +118,12 @@ export async function checkStkMssc(req, res) {
 
 export async function insertStkWms(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('stockistId', sql.VarChar)
-  .input('stockistName', sql.VarChar)
-  .input('stockistCode', sql.VarChar)
-  .input('stockistAddress', sql.VarChar)
-  .input('createdDate', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('stockistId', VarChar)
+  .input('stockistName', VarChar)
+  .input('stockistCode', VarChar)
+  .input('stockistAddress', VarChar)
+  .input('createdDate', VarChar)
   .prepare(`INSERT INTO klink_whm_testing.dbo.MASTER_STOCKIES (
     ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES, ALAMAT_STOCKIES,
     IS_ACTIVE, CREATED_DATE, CREATED_BY)
@@ -138,7 +140,7 @@ export async function insertStkWms(req, res) {
     }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result) {
+      } else if (_.isEmpty(result.rowsAffected)) {
         res.status(500).send({message: 'Whoops! Something went wrong'})
       } else {
         res.json({ message: 'Success insert data' })
@@ -150,15 +152,15 @@ export async function insertStkWms(req, res) {
 
 export async function countProdukAlias(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('codeAlias', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('codeAlias', VarChar)
   .prepare(`SELECT COUNT(*) AS ALIAS FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS
   WHERE ALIAS_CODE = @codeAlias`, err => {
     if (err) throw err;
     ps.execute({ codeAlias: req.params.alias_code }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordset);
@@ -170,15 +172,15 @@ export async function countProdukAlias(req, res) {
 
 export async function selectProdukAlias(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('codeAlias', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('codeAlias', VarChar)
   .prepare(`SELECT ALIAS_CODE, PRODUK_ALIAS_ID FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS
   WHERE ALIAS_CODE = @codeAlias`, err => {
     if (err) throw err;
     ps.execute({ codeAlias: req.params.alias_code }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordset);
@@ -190,16 +192,16 @@ export async function selectProdukAlias(req, res) {
 
 export async function insertKWStk(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('salesSimulationId', sql.VarChar)
-  .input('warehouseId', sql.VarChar)
-  .input('stockistId', sql.VarChar)
-  .input('receiptNo', sql.VarChar)
-  .input('aliasId', sql.VarChar)
-  .input('qty', sql.VarChar)
-  .input('dateCreated', sql.VarChar)
-  .input('transactionDate', sql.VarChar)
-  .input('restQty', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('salesSimulationId', VarChar)
+  .input('warehouseId', VarChar)
+  .input('stockistId', VarChar)
+  .input('receiptNo', VarChar)
+  .input('aliasId', VarChar)
+  .input('qty', VarChar)
+  .input('dateCreated', VarChar)
+  .input('transactionDate', VarChar)
+  .input('restQty', VarChar)
   .prepare(`INSERT INTO klink_whm_testing.dbo.T_SALESSIMULATION (
     ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES,
     KWITANSI_NO, PRODUK_ALIAS_ID, QTY, CREATED_DATE,
@@ -222,7 +224,7 @@ export async function insertKWStk(req, res) {
       }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result) {
+      } else if (_.isEmpty(result.rowsAffected)) {
         res.status(500).send({message: 'Whoops! Something went wrong'})
       } else {
         res.json({ message: 'Success insert data' })
@@ -234,16 +236,16 @@ export async function insertKWStk(req, res) {
 
 export async function insertKWInv(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('salesSimulationId', sql.VarChar)
-  .input('warehouseId', sql.VarChar)
-  .input('stockistId', sql.VarChar)
-  .input('receiptNo', sql.VarChar)
-  .input('aliasId', sql.VarChar)
-  .input('qty', sql.VarChar)
-  .input('dateCreated', sql.VarChar)
-  .input('transactionDate', sql.VarChar)
-  .input('restQty', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('salesSimulationId', VarChar)
+  .input('warehouseId', VarChar)
+  .input('stockistId', VarChar)
+  .input('receiptNo', VarChar)
+  .input('aliasId', VarChar)
+  .input('qty', VarChar)
+  .input('dateCreated', VarChar)
+  .input('transactionDate', VarChar)
+  .input('restQty', VarChar)
   .prepare(`INSERT INTO klink_whm_testing.dbo.T_SALESSIMULATION (
     ID_SALESSIMULATION, ID_WAREHOUSE, ID_STOCKIES, KWITANSI_NO, PRODUK_ALIAS_ID,
     QTY, CREATED_DATE, TRANSAKSI_DATE, QTY_SEND, QTY_SISA, IS_INDENT, TIPE)
@@ -264,7 +266,7 @@ export async function insertKWInv(req, res) {
       }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result) {
+      } else if (_.isEmpty(result.rowsAffected)) {
         res.status(500).send({message: 'Whoops! Something went wrong'})
       } else {
         res.json({ message: 'Success insert data' })
@@ -276,8 +278,8 @@ export async function insertKWInv(req, res) {
 
 export async function getRePinaple(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_mlm);
-  ps.input('date', sql.VarChar)
+  const ps = new PreparedStatement(await pool_mlm);
+  ps.input('date', VarChar)
   .prepare(`SELECT * FROM klink_mlm2010.dbo.getpinaple
   WHERE createdt = @date'
   AND trcd COLLATE SQL_Latin1_General_CP1_CI_AS NOT  IN

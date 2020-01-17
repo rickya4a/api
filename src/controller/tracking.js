@@ -3,6 +3,7 @@ import { pool_whm, pool_mlm } from '../config/db_config';
 import { PreparedStatement, VarChar } from 'mssql';
 import { verify as _verify, sign } from '../config/auth_service';
 import { Base64 } from 'js-base64';
+import _ from 'lodash';
 
 export async function index(req, res) { // urutan paramnya harus req, res
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -71,7 +72,7 @@ export async function getDetail(req, res) {
       }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordsets) {
+      } else if (_.isEmpty(result.recordsets)) {
         res.status(204).send({ values: null, message: 'Data not found' });
       } else {
         res.json(result.recordsets);
@@ -104,7 +105,7 @@ export async function findTracking(req, res) {
     ps.execute({ noDo: req.params.NO_DO }, (err, result) => {
       if (err) {
         throw err
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).json({ values: null, message: 'Data not found' })
       } else {
         res.json(result.recordsets)
@@ -161,7 +162,7 @@ export async function insertData(req, res) {
     }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result) {
+      } else if (_.isEmpty(result.rowsAffected)) {
         res.status(500).send({ message: 'Whoops! Something went wrong' })
       } else {
         res.json({ message: 'Success insert data' })
@@ -196,7 +197,7 @@ export async function findCourier(req, res) {
     ps.execute({ userName: username, password: password }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).json({ values: null, message: 'User not found' });
       } else {
         let payload = {
@@ -207,9 +208,9 @@ export async function findCourier(req, res) {
         let username = result.recordset[0].USERNAME;
         const token = sign(payload, 'k-tracking');
         res.setHeader('Authorization', `Bearer ${token}`);
-        setItem('Authorization', token);
-        setItem('kurir', kurir);
-        setItem('username', username);
+        localStorage.setItem('Authorization', token);
+        localStorage.setItem('kurir', kurir);
+        localStorage.setItem('username', username);
         res.json({ user: result.recordset, token: token });
       }
       return ps.unprepare();
@@ -262,7 +263,7 @@ export async function getTrackingKnetStockis(req, res) {
     ps.execute({ trcd: req.params.trcd }, (err, header) => {
       if (err) {
         throw err;
-      } else if (!header.recordset) {
+      } else if (_.isEmpty(header.recordset)) {
         res.status(204).send({ header: null, tracking: null });
       } else {
         let id_do = header.recordset[0].ID_DO;
@@ -276,7 +277,7 @@ export async function getTrackingKnetStockis(req, res) {
             ORDER BY CREATED_DATE DESC`, (err, tracking) => {
             if (err) {
               throw err;
-            } else if (!tracking.recordset) {
+            } else if (_.isEmpty(tracking.recordset)) {
               res.send({ header: header.recordset, tracking: null });
             } else {
               res.json({
@@ -323,8 +324,8 @@ export async function getTrackingKnetInv(req, res) {
     ps.execute({ invoiceNo: req.params.invoiceno }, (err, header) => {
       if (err) {
         throw err;
-      } else if (!header.recordset) {
-        res.status(204).send({ header: null, tracking: null });
+      } else if (_.isEmpty(header.recordset)) {
+        res.send({ header: null, tracking: null });
       } else {
         let id_do = header.recordset[0].ID_DO;
         pool_whm.then(pool => {
@@ -337,7 +338,7 @@ export async function getTrackingKnetInv(req, res) {
             ORDER BY CREATED_DATE DESC`, (err, tracking) => {
             if (err) {
               throw err;
-            } else if (!tracking.recordset) {
+            } else if (_.isEmpty(tracking.recordset)) {
               res.send({ header: header.recordset, tracking: null });
             } else {
               res.json({
@@ -378,8 +379,8 @@ export async function getDataCourier(req, res) {
     ps.execute({ userName: req.params.username }, (err, result) => {
       if (err) {
         throw err;
-      } else if (!result.recordset) {
-        res.status(204).send({ values: null, message: 'User Not Found' });
+      } else if (_.isEmpty(result.recordset)) {
+        res.send({ values: null, message: 'User Not Found' });
       } else {
         res.json(result.recordset);
       }
@@ -427,7 +428,7 @@ export async function updatePassCourier(req, res) {
           (err, result) => {
             if (err) {
               throw err;
-            } else if (!result) {
+            } else if (_.isEmpty(result.rowsAffected)) {
               res.status(500).send({ message: 'Whoops! Something went wrong' })
             }
             res.json({ message: 'Success updated password' });
@@ -489,7 +490,7 @@ export async function listDO(req, res) {
     }, (err, result) => {
       if (err) {
         throw err
-      } else if (!result.recordset) {
+      } else if (_.isEmpty(result.recordset)) {
         res.status(204).json({ values: null, message: 'Data not found' })
       } else {
         res.json(result.recordset);
@@ -530,7 +531,7 @@ export async function getDoByDate(req, res) {
     }, (err, t_do) => {
       if (err) {
         throw err
-      } else if (!t_do.recordset) {
+      } else if (_.isEmpty(t_do.recordset)) {
         res.status(204).json({ values: null, message: 'Data not found' })
       } else {
         pool_whm.then(pool => {
@@ -549,7 +550,7 @@ export async function getDoByDate(req, res) {
             (err, t_do_manual) => {
             if (err) {
               throw err;
-            } else if (!t_do_manual.recordset) {
+            } else if (_.isEmpty(t_do_manual.recordset)) {
               res.status(204).json({ values: null, message: 'Data not found' })
             } else {
               let items = t_do.recordset.concat(t_do_manual.recordset)
