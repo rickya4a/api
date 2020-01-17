@@ -28,7 +28,7 @@ export function tracking(req, res) {
   return pool_whm.then(pool => {
     pool.request()
       .query(`SELECT ID_DO, NO_DO, STATUS,
-      CONVERT(VARCHAR(30), TANGGAL, 20) AS TANGGAL,
+      CONVERT(VARCHAR(30), CREATED_DATE, 20) AS TANGGAL,
       CREATED_BY FROM T_TRACKING_DO`, (err, result) => {
       if (err) throw err;
       res.json(result.recordset);
