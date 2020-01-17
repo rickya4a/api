@@ -510,55 +510,49 @@ export async function listDO(req, res) {
 export async function getDoByDate(req, res) {
   let token = localStorage.getItem('Authorization');
   let verify = _verify(token, 'k-tracking');
-  if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+  // if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('startDate', VarChar)
   .input('endDate', VarChar)
   .input('courierId', VarChar)
-    .prepare(`SELECT A.ID_DO, A.NO_DO, A.ID_STOCKIES, A.NAMA, A.ALAMAT1 AS ALAMAT,
-      A.NO_RESI,CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
-      A.ID_WAREHOUSE, B.WAREHOUSE_NAME
-    FROM T_DO A
-    LEFT JOIN MASTER_WAREHOUSE B ON A.ID_WAREHOUSE = B.ID_WAREHOUSE
-    WHERE A.IS_FAILED = '0' AND A.ID_COURIER = @courierId
-    AND A.CREATED_DATE BETWEEN @startDate AND @endDate`, err => {
+  .prepare(`SELECT A.ID_DO, A.NO_DO, A.ID_STOCKIES, A.NAMA,
+  A.ALAMAT1 AS ALAMAT, A.NO_RESI,
+  CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
+  A.ID_WAREHOUSE, B.WAREHOUSE_NAME
+  FROM T_DO A
+  LEFT JOIN MASTER_WAREHOUSE B ON A.ID_WAREHOUSE = B.ID_WAREHOUSE
+  WHERE A.IS_FAILED = '0' AND A.ID_COURIER = @courierId
+  AND A.CREATED_DATE BETWEEN @startDate AND @endDate`, err => {
     if (err) throw err;
     ps.execute({
       startDate: req.body.tgl_awal,
       endDate: req.body.tgl_akhir,
       courierId: req.body.kurir
     }, (err, t_do) => {
-      if (err) {
-        throw err
-      } else if (_.isEmpty(t_do.recordset)) {
-        res.status(204).json({ values: null, message: 'Data not found' })
-      } else {
-        pool_whm.then(pool => {
-          pool.request()
-          .input('startDate', req.body.tgl_awal)
-          .input('endDate', req.body.tgl_akhir)
-          .input('courierId', req.body.kurir)
-          .query(`SELECT A.ID_MANUAL_DO AS ID_DO, A.NO_MANUAL_DO AS NO_DO,
-              A.ID_STOCKIES, A.NAMA_STOCKIES AS NAMA, A.ALAMAT_STOCKIES AS ALAMAT,
-              A.NO_RESI, CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
-              A.ID_WAREHOUSE, B.WAREHOUSE_NAME
-            FROM T_MANUAL_DO A
-            LEFT JOIN MASTER_WAREHOUSE B ON A.ID_WAREHOUSE = B.ID_WAREHOUSE
-            WHERE A.ID_COURIER = @courierId
-            AND A.CREATED_DATE BETWEEN @startDate AND @endDate`,
-            (err, t_do_manual) => {
-            if (err) {
-              throw err;
-            } else if (_.isEmpty(t_do_manual.recordset)) {
-              res.status(204).json({ values: null, message: 'Data not found' })
-            } else {
-              let items = t_do.recordset.concat(t_do_manual.recordset)
-              res.json(items)
-            }
-          })
+      if (err) throw err;
+      pool_whm.then(pool => {
+        pool.request()
+        .input('startDate', req.body.tgl_awal)
+        .input('endDate', req.body.tgl_akhir)
+        .input('courierId', req.body.kurir)
+        .query(`SELECT A.ID_MANUAL_DO AS ID_DO, A.NO_MANUAL_DO AS NO_DO,
+          A.ID_STOCKIES, A.NAMA_STOCKIES AS NAMA, A.ALAMAT_STOCKIES AS ALAMAT,
+          A.NO_RESI, CONVERT(VARCHAR(30), A.TANGGAL_DO, 20) AS TANGGAL_DO,
+          A.ID_WAREHOUSE, B.WAREHOUSE_NAME
+          FROM T_MANUAL_DO A
+          LEFT JOIN MASTER_WAREHOUSE B ON A.ID_WAREHOUSE = B.ID_WAREHOUSE
+          WHERE A.ID_COURIER = @courierId
+          AND A.CREATED_DATE
+          BETWEEN @startDate AND @endDate`, (err, t_do_manual) => {
+          if (err) {
+            throw err;
+          } else {
+            let items = t_do.recordset.concat(t_do_manual.recordset)
+            res.json(items)
+          }
         })
-      }
+      })
     })
   })
 }
