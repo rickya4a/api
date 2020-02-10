@@ -5,7 +5,7 @@ import routes from './routes';
 import "@babel/polyfill"
 const app = express();
 
-app.use(urlencoded({ extended: true}));
+app.use(urlencoded({ extended: true }));
 app.use(json());
 app.use(cors());
 app.options('*', cors());
