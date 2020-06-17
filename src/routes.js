@@ -167,4 +167,9 @@ export default (app) => {
   app.route('/jatis-message')
   .get(k_net.jatisMessage)
 
+  app.route('/input-encrypted')
+  .post(k_net.inputEncrypted)
+
+  app.route('/compare-encrypted')
+  .get(k_net.compareEncrypted)
 }

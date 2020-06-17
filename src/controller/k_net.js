@@ -1,5 +1,7 @@
 import { pool_ecommerce } from '../config/db_config';
 import { PreparedStatement, VarChar, DateTime } from 'mssql';
+import bcrypt from 'bcrypt';
+import { Base64 } from "js-base64";
 
 export async function jatisMessage(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -47,4 +49,39 @@ export async function jatisMessage(req, res) {
       return ps.unprepare();
     })
   })
+}
+
+// Dev only
+/**
+ * Assume inputEncrypted as registerMember
+ * and compareEncrypted as login
+ *
+ * @inputEcrypted
+ * User input their plain password. Salt
+ * and hash user password input and store it to DB
+ *
+ * @compareEncrypted
+ * User input their plain password. Compare
+ * the input and return boolean value.
+ * If it's matched return true and vice-versa
+ */
+export async function inputEncrypted(req, res) {
+  bcrypt.genSalt(12, (err, salt) => {
+    if (err) return err
+    bcrypt.hash(req.body.password, salt, (err, hash) => {
+      let encoded = Base64.encode(hash)
+      res.json(encoded)
+    })
+  })
+}
+
+export async function compareEncrypted(req, res) {
+  const match = await bcrypt.compare(
+    req.body.password,
+    Base64.decode(req.body.hash)
+  )
+  Object.entries().length === 0
+  if (match) {
+    res.send(match)
+  }
 }
