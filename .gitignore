@@ -1,0 +1,7 @@
+node_modules/
+key/
+.dockerignore
+Dockerfile
+.vscode
+dist
+.vscode/sftp.json
