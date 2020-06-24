@@ -5,3 +5,4 @@ Dockerfile
 .vscode
 dist
 .vscode/sftp.json
+.well-known
