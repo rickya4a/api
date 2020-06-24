@@ -2,12 +2,14 @@ import express from 'express';
 import { urlencoded, json } from 'body-parser';
 import cors from 'cors';
 import routes from './routes';
-import "@babel/polyfill"
+import serveIndex from 'serve-index';
+import "@babel/polyfill";
 const app = express();
 
 app.use(urlencoded({ extended: true }));
 app.use(json());
 app.use(cors());
+app.use('/.well-known', express.static('.well-known'), serveIndex('.well-known'));
 app.options('*', cors());
 routes(app);
 
