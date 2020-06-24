@@ -1,12 +1,13 @@
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+require('dotenv').config();
 
 // -- key -- //
 const pvtKey = fs.readFileSync(
-  path.resolve(__dirname, '../../key/private.key'))
+  path.resolve(__dirname, process.env.PRIVATE_KEY))
 const pubKey = fs.readFileSync(
-  path.resolve(__dirname, '../../key/public.key'))
+  path.resolve(__dirname, process.env.PUBLIC_KEY))
 
 module.exports = {
   sign: (payload, app) => {

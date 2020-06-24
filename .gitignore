@@ -6,3 +6,4 @@ Dockerfile
 dist
 .vscode/sftp.json
 .well-known
+.env

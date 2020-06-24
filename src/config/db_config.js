@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 /**
  * Global connection pool to connect every single
  * database
@@ -6,23 +8,23 @@ import { ConnectionPool } from 'mssql';
 
 const config = {
   whm: {
-    user: 'sa',
-    password: 'QwertY@123',
-    server: '192.168.22.3',
-    database: 'klink_whm'
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_HOST,
+    database: process.env.DB_1
   },
   mlm: {
-    user: 'sa',
-    password: 'QwertY@123',
-    server: '192.168.22.3',
-    database: 'klink_mlm2010',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_HOST,
+    database: process.env.DB_2,
     requestTimeout: 50000
   },
   ecommerce: {
-    user: 'sa',
-    password: 'QwertY@123',
-    server: '192.168.22.3',
-    database: 'db_ecommerce',
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    server: process.env.DB_HOST,
+    database: process.env.DB_3,
     requestTimeout: 50000
   }
 }
