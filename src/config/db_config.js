@@ -1,5 +1,3 @@
-require('dotenv').config();
-
 /**
  * Global connection pool to connect every single
  * database

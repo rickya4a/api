@@ -1,7 +1,6 @@
 const fs = require('fs');
 const path = require('path');
 const jwt = require('jsonwebtoken');
-require('dotenv').config();
 
 // -- key -- //
 const pvtKey = fs.readFileSync(

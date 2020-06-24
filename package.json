@@ -5,9 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --exec babel-node src/server.js",
+    "start": "nodemon --exec babel-node --require ./node_modules/dotenv/config src/server.js",
     "build": "babel ./src --out-dir dist",
-    "serve": "node dist/server.js"
+    "serve": "node -r dotenv/config dist/server.js"
   },
   "author": "Ricky Aditya",
   "license": "ISC",
