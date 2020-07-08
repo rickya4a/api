@@ -1,5 +1,5 @@
 import { pool_ecommerce } from '../config/db_config';
-import { PreparedStatement, VarChar, DateTime } from 'mssql';
+import { PreparedStatement, VarChar, DateTime, Request } from 'mssql';
 import bcrypt from 'bcrypt';
 import { Base64 } from "js-base64";
 
@@ -47,6 +47,41 @@ export async function jatisMessage(req, res) {
         })
       }
       return ps.unprepare();
+    })
+  })
+}
+
+// Cronjob functions
+export async function deleteKWalletToken(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const transaction = (await pool_ecommerce).transaction();
+  transaction.begin(err => {
+
+    const request = new Request(transaction);
+    let query = `DELETE FROM ecomm_kwallet_token
+    WHERE CONVERT(VARCHAR(10), createdt, 120)
+    < CONVERT(VARCHAR(10), GETDATE(), 120)`;
+
+    // rolledback state
+    let rolledBack = false;
+    transaction.on('rollback', aborted => {
+      rolledBack = true
+    })
+
+    request.query(query, (err, result) => {
+      if (err) {
+        if (!rolledBack) {
+          transaction.rollback(err => {
+            res.json({ message: err });
+          })
+        }
+      } else {
+        transaction.commit(err => {
+          if (result.rowsAffected > 0) {
+            res.json({ message: 'Success' });
+          }
+        })
+      }
     })
   })
 }

@@ -1,28 +1,59 @@
 import { pool_whm } from '../config/db_config';
-import { PreparedStatement, VarChar } from 'mssql';
+import { VarChar, PreparedStatement } from 'mssql';
+import helper from '../lib/main';
+import _ from 'lodash';
 
-exports.getDataHeader = (req, res) => {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    pool_whm.then(pool => {
-      pool.request()
-      .input('initiateId', VarChar, req.params.initiate_do_id)
-      .query(`SELECT b.NAMA_STOCKIES,a.ID_STOCKIES, b. ALAMAT_STOCKIES,
-      a.ID_WAREHOUSE, c.WAREHOUSE_NAME, a.NAMA, a.ALAMAT1, a.ALAMAT2, a.ALAMAT3
-      FROM klink_whm_testing.dbo.T_INITIATE_DO a
-      LEFT JOIN klink_whm_testing.dbo.MASTER_STOCKIES b
-      ON a.ID_STOCKIES = b.ID_STOCKIES
-      LEFT JOIN klink_whm_testing.dbo.MASTER_WAREHOUSE c
-      ON a.ID_WAREHOUSE = c.ID_WAREHOUSE
-      WHERE a.INITIATE_DO_ID = @initiateId`, (err, result) => {
-        if (err) throw err
-        res.json(result.recordset)
-      })
+export async function getDataHeader(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('initiateId', VarChar)
+  .prepare(`SELECT b.NAMA_STOCKIES,a.ID_STOCKIES, b. ALAMAT_STOCKIES,
+  a.ID_WAREHOUSE, c.WAREHOUSE_NAME, a.NAMA, a.ALAMAT1, a.ALAMAT2, a.ALAMAT3
+  FROM klink_whm_testing.dbo.T_INITIATE_DO a
+  LEFT JOIN klink_whm_testing.dbo.MASTER_STOCKIES b
+  ON a.ID_STOCKIES = b.ID_STOCKIES
+  LEFT JOIN klink_whm_testing.dbo.MASTER_WAREHOUSE c
+  ON a.ID_WAREHOUSE = c.ID_WAREHOUSE
+  WHERE a.INITIATE_DO_ID = @initiateId`, err => {
+    if (err) throw err;
+    ps.execute({
+      initiateId: req.params.initiate_do_id
+    }, (err, result) => {
+      helper._getResult(err, result, 'recordset');
+      return ps.unprepare();
     })
+  })
+}
+
+export async function getDetailProduct(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('initiateId', VarChar)
+  .prepare(`SELECT E.PRODUCT_CODE, E.PRODUCT_NAME,
+  E.ID_PRODUCT, SUM(b.QTY_SISA) AS QTYDELIVERY
+  FROM klink_whm_testing.dbo.T_DETAIL_INITIATE_DO a
+  LEFT join klink_whm_testing.dbo.T_SALESSIMULATION b
+  ON a.ID_KWITANSI = b.KWITANSI_NO
+  LEFT join klink_whm_testing.dbo.MASTER_PRODUK_ALIAS c
+  ON b.PRODUK_ALIAS_ID=c.PRODUK_ALIAS_ID
+  LEFT JOIN klink_whm_testing.dbo.MASTER_PRODUK E
+  ON E.ID_PRODUCT = c.ID_PRODUCT
+  WHERE a.INITIATE_DO_ID = @initiateId AND b.QTY_SISA != 0
+  AND b.IS_INDENT != 1 AND B.IS_BUNDLED = 0
+  GROUP BY E.PRODUCT_CODE, e.PRODUCT_NAME, E.ID_PRODUCT`, err => {
+    if (err) throw err;
+    ps.execute({
+      initiateId: req.params.initiate_do_id
+    }, (err, result) => {
+      helper._getResult(err, result, 'recordset');
+      return ps.unprepare();
+    })
+  })
 }
 
 exports.getDetailProduct = (req, res) => {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  console.log('test');
 
   pool_whm.then(pool => {
     pool.request()

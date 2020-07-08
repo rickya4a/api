@@ -7,3 +7,4 @@ dist
 .vscode/sftp.json
 .well-known
 .env
+dump.rdb

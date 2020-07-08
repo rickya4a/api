@@ -2,6 +2,7 @@ import localStorage from 'localStorage';
 import { pool_whm, pool_mlm } from '../config/db_config';
 import { PreparedStatement, VarChar } from 'mssql';
 import { verify as _verify, sign } from '../config/auth_service';
+import { _setData, _getData, _getResult, _cachedData } from '../lib/main'
 import { Base64 } from 'js-base64';
 import _ from 'lodash';
 
@@ -9,9 +10,9 @@ export async function index(req, res) { // urutan paramnya harus req, res
   res.setHeader('Access-Control-Allow-Origin', '*');
   const pool = await pool_mlm;
   pool.request()
-  .query('SELECT TOP 10 * FROM bbhdr', (err, result) => {
+  .query('SELECT TOP 100 * FROM bbhdr', (err, result) => {
     if (err) throw err;
-    res.json(result.recordset);
+    _cachedData(req.route.path, result.recordset, res);
   });
 }
 
@@ -31,7 +32,7 @@ export function tracking(req, res) {
       CONVERT(VARCHAR(30), CREATED_DATE, 20) AS TANGGAL,
       CREATED_BY FROM T_TRACKING_DO`, (err, result) => {
       if (err) throw err;
-      res.json(result.recordset);
+      _cachedData(req.route.path, result.recordset, res);
     })
   })
 }
@@ -70,25 +71,17 @@ export async function getDetail(req, res) {
         noDo: req.params.NO_DO,
         courier: req.body.kurir
       }, (err, result) => {
-      if (err) {
-        throw err;
-      } else if (_.isEmpty(result.recordsets)) {
-        res.status(204).send({ values: null, message: 'Data not found' });
-      } else {
-        res.json(result.recordsets);
-      }
+      _getResult(err, result, 'recordsets');
       return ps.unprepare();
     })
   })
 }
 
 /**
- * get single tracking detail
- *
- * @param   {mixed}  req  http request
- * @param   {mixed}  res  http response
- *
- * @return  {obj}       array detail
+ * Get single tracking detail
+ * @param   {object}  req  http request object
+ * @param   {object}  res  http response object
+ * @return  {void}       array detail
  */
 export async function findTracking(req, res) {
   let token = localStorage.getItem('Authorization');
@@ -103,13 +96,7 @@ export async function findTracking(req, res) {
     CREATED_BY from T_TRACKING_DO WHERE NO_DO = @noDo`, err => {
     if (err) throw err;
     ps.execute({ noDo: req.params.NO_DO }, (err, result) => {
-      if (err) {
-        throw err
-      } else if (_.isEmpty(result.recordset)) {
-        res.status(204).json({ values: null, message: 'Data not found' })
-      } else {
-        res.json(result.recordsets)
-      }
+      _getResult(err, result, 'recordsets');
       return ps.unprepare();
     })
   })
@@ -117,11 +104,9 @@ export async function findTracking(req, res) {
 
 /**
  * Insert new tracking data
- *
- * @param   {req}  req  http request body
- * @param   {res}  res  http reponse
- *
- * @return  {obj}       json message
+ * @param   {object}  req  http request object
+ * @param   {object}  res  http reponse object
+ * @return  {void}       json message
  */
 export async function insertData(req, res) {
   let token = localStorage.getItem('Authorization');
@@ -174,11 +159,9 @@ export async function insertData(req, res) {
 
 /**
  * Get courier data/credentials
- *
- * @param   {mixed}  req  http body request
- * @param   {mixed}  res  http reponse
- *
- * @return  {obj}       get courier credetials(username, id, password)
+ * @param   {object}  req  http request object
+ * @param   {object}  res  http reponse object
+ * @return  {object}       get courier credetials(username, id, password)
  */
 export async function findCourier(req, res) {
   let username = req.body.username;
@@ -464,7 +447,9 @@ export async function stockies(req, res) {
 export async function listDO(req, res) {
   let token = localStorage.getItem('Authorization');
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('stockistId', VarChar)

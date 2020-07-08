@@ -172,4 +172,8 @@ export default (app) => {
 
   app.route('/compare-encrypted')
   .get(k_net.compareEncrypted)
+
+  // Cronjob routes
+  app.route('/delete/k-wallet/token')
+  .post(k_net.deleteKWalletToken)
 }

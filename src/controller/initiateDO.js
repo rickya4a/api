@@ -1,9 +1,10 @@
-import { pool_whm, sql } from "../config/db_config";
+import { pool_whm, } from "../config/db_config";
+import { PreparedStatement, VarChar } from 'mssql';
 
 export async function getDataHeader(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('stockistId', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('stockistId', VarChar)
   .prepare(`SELECT TOP 1 b.NAMA_STOCKIES, a.ID_STOCKIES, b. ALAMAT_STOCKIES,
   a.ID_WAREHOUSE, c.WAREHOUSE_NAME, A.NAMA, A.ALAMAT1, A.ALAMAT2, A.ALAMAT3
   FROM T_SALESSIMULATION a
@@ -26,8 +27,8 @@ export async function getDataHeader(req, res) {
 
 export async function getListProductsKW(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('receiptno', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('receiptno', VarChar)
   .prepare(`SELECT A.PRODUK_ALIAS_ID, B.ALIAS_CODE, B.IS_BUNDLE, B.ID_PRODUCT
   FROM klink_whm_testing.dbo.T_SALESSIMULATION A
   LEFT JOIN klink_whm_testing.dbo.MASTER_PRODUK_ALIAS B
@@ -49,8 +50,8 @@ export async function getListProductsKW(req, res) {
 
 export async function checkAliasProdSingle(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('alias', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('alias', VarChar)
   .prepare(`SELECT COUNT(PRODUK_ALIAS_ID) AS JUM
   FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS a
   JOIN klink_whm_testing.dbo.MASTER_PRODUK b ON b.ID_PRODUCT = a.ID_PRODUCT
@@ -72,8 +73,8 @@ export async function checkAliasProdSingle(req, res) {
 
 export async function checkBoxProduct(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('product', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('product', VarChar)
   .prepare(`SELECT COUNT(ID_PRODUCT) AS EXIST
   FROM klink_whm_testing.dbo.MASTER_PRODUK
   WHERE ID_PRODUCT = @product AND BOX != 0`, err => {
@@ -93,8 +94,8 @@ export async function checkBoxProduct(req, res) {
 
 export async function checkAliasProdBundling(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('bundle', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('bundle', VarChar)
   .prepare(`SELECT COUNT(PRODUK_ALIAS_ID) AS JUM
   FROM klink_whm_testing.dbo.DETAIL_BUNDLE A
   WHERE PRODUK_ALIAS_ID = @bundle`, err => {
@@ -114,8 +115,8 @@ export async function checkAliasProdBundling(req, res) {
 
 export async function getDetailBundling(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('bundle', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('bundle', VarChar)
   .prepare(`SELECT ID_PRODUCT FROM klink_whm_testing.dbo.DETAIL_BUNDLE
   WHERE PRODUK_ALIAS_ID = @bundle`, err => {
     if (err) throw err;
@@ -134,8 +135,8 @@ export async function getDetailBundling(req, res) {
 
 export async function checkProduct(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('product', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('product', VarChar)
   .prepare(`SELECT COUNT(ID_PRODUCT) AS JUM FROM MASTER_PRODUK
   WHERE ID_PRODUCT = @product`, err => {
     if (err) throw err;
@@ -154,8 +155,8 @@ export async function checkProduct(req, res) {
 
 export async function processKW(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('receiptNo', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('receiptNo', VarChar)
   .prepare(`SELECT A.*, B.IS_BUNDLE
   FROM klink_whm_testing.dbo.T_SALESSIMULATION A
   LEFT JOIN klink_whm_testing.dbo.MASTER_PRODUK_ALIAS B
@@ -178,8 +179,8 @@ export async function processKW(req, res) {
 
 export async function updateFlagProdBundling(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('salessimulationId', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('salessimulationId', VarChar)
   .prepare(`UPDATE klink_whm_testing.dbo.T_SALESSIMULATION
   SET IS_BUNDLED = 1, IS_ACTIVE = 1
   WHERE ID_SALESSIMULATION = @salessimulationId`, err => {
@@ -201,8 +202,8 @@ export async function updateFlagProdBundling(req, res) {
 
 export async function processProdBundling(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('alias', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('alias', VarChar)
   .prepare(`SELECT B.ID_PRODUCT, B.QTY
   FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS A
   LEFT JOIN klink_whm_testing.dbo.DETAIL_BUNDLE B
@@ -224,8 +225,8 @@ export async function processProdBundling(req, res) {
 
 export async function searchProductCode(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('productId', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('productId', VarChar)
   .prepare(`SELECT PRODUCT_CODE FROM klink_whm_testing.dbo.MASTER_PRODUK
   WHERE ID_PRODUCT = @productId`, err => {
     if (err) throw err;
@@ -244,8 +245,8 @@ export async function searchProductCode(req, res) {
 
 export async function searchAlias(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('aliasCode', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('aliasCode', VarChar)
   .prepare(`SELECT TOP 1 PRODUK_ALIAS_ID FROM klink_whm_testing.dbo.MASTER_PRODUK_ALIAS
   WHERE ALIAS_CODE = @aliasCode AND IS_ACTIVE = '0'`, err => {
     if (err) throw err;
@@ -264,9 +265,9 @@ export async function searchAlias(req, res) {
 
 export async function checkDuplicateAlias(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('alias', sql.VarChar)
-  .input('receiptNo', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('alias', VarChar)
+  .input('receiptNo', VarChar)
   .prepare(`SELECT * FROM klink_whm_testing.dbo.T_SALESSIMULATION
   WHERE KWITANSI_NO = @receiptNo AND PRODUK_ALIAS_ID = @alias`, err => {
     if (err) throw err;
@@ -288,9 +289,9 @@ export async function checkDuplicateAlias(req, res) {
 
 export async function updateQtyDuplicateAlias(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('salessimulationId', sql.VarChar)
-  .input('qty', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('salessimulationId', VarChar)
+  .input('qty', VarChar)
   .prepare(`UPDATE klink_whm_testing.dbo.T_SALESSIMULATION
   SET QTY = @qty, QTY_SISA = @qty
   WHERE ID_SALESSIMULATION = @salessimulationId`, err => {
@@ -313,8 +314,8 @@ export async function updateQtyDuplicateAlias(req, res) {
 
 export async function updateFlagKw(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  const ps = new sql.PreparedStatement(await pool_whm);
-  ps.input('receiptNo', sql.VarChar)
+  const ps = new PreparedStatement(await pool_whm);
+  ps.input('receiptNo', VarChar)
   .prepare(`UPDATE klink_whm_testing.dbo.T_SALESSIMULATION
   SET IS_ACTIVE = '1' WHERE KWITANSI_NO = @receiptNo`, err => {
     if (err) throw err;
