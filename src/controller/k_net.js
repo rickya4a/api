@@ -2,6 +2,10 @@ import { pool_ecommerce } from '../config/db_config';
 import { PreparedStatement, VarChar, DateTime, Request } from 'mssql';
 import bcrypt from 'bcrypt';
 import { Base64 } from "js-base64";
+import WhatsappApi from '../lib/whatsapp_api';
+import Axios from 'axios';
+import moment from 'moment'
+import _ from 'lodash';
 
 export async function jatisMessage(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -84,6 +88,74 @@ export async function deleteKWalletToken(req, res) {
       }
     })
   })
+}
+
+/**
+ * Get latest token
+ *
+ * @param   {mixed}  req  http request
+ * @param   {mixed}  res  http response
+ *
+ * @return  {void}       Display token in JSON
+ */
+export function getToken(req, res) {
+  // Create new instance from Whatsapp lib
+  const api = new WhatsappApi;
+
+  api.getToken().then(result => {
+    if (_.isEmpty(result.recordset)) {
+      requestToken().then(token => res.json(token))
+    } else {
+      res.send(result.recordset[0])
+    }
+  })
+}
+
+/**
+ * Request new token from Jatis
+ *
+ * @return  {boolean|object}  return new token
+ */
+export async function requestToken() {
+  // Create new instance from Whatsapp lib
+  let api = new WhatsappApi;
+
+  // Create basic token http authorization
+  let auth = Base64.encode(`${api.interactive_username}:${api.interactive_userpwd}`);
+
+  // Make request to Jatis
+  const result = await Axios.post(`${api.url}/wa/users/login`, {}, {
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  // Destructuring token from API
+  let { token, expires_after } = result.data.users[0];
+
+  // Create new object for token
+  let newArr = {
+    token: token,
+    expire: moment(expires_after).format('YYYY-MM-DD')
+  };
+
+  // Check if token request has been successfully created
+  if (_.isEmpty(result.data.users[0])) return false;
+
+  // Insert new token to database
+  pool_ecommerce.then((pool) => {
+    pool.request()
+    .input('token', newArr.token)
+    .input('expire', newArr.expire)
+    .query(`INSERT INTO whatsapp_token (token, expire) VALUES (
+    @token, CONVERT(VARCHAR, @expire, 23)
+    )`, err => {
+      if (err) throw err;
+    });
+  });
+
+  return newArr;
 }
 
 // Dev only

@@ -176,4 +176,7 @@ export default (app) => {
   // Cronjob routes
   app.route('/delete/k-wallet/token')
   .post(k_net.deleteKWalletToken)
+
+  app.route('/get-whatsapp-token')
+  .get(k_net.getToken)
 }

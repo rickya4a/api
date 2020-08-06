@@ -1,4 +1,4 @@
-import { should as _should, use, request, expect } from 'chai';
+import { should as _should, use, request } from 'chai';
 import chaiHttp from 'chai-http';
 import app from '../src/server';
 const should = _should();
@@ -12,9 +12,9 @@ describe('/GET all data', () => {
       res.should.have.status(200);
       res.body.should.be.a('array');
       done();
-    })
-  })
-})
+    });
+  });
+});
 
 describe('/GET stockists list', () => {
   it('should GET all stockist list', done => {
@@ -22,9 +22,9 @@ describe('/GET stockists list', () => {
       res.should.have.status(200);
       res.body.should.be.a('array');
       done();
-    })
-  })
-})
+    });
+  });
+});
 
 describe('/GET/:productid product data', () => {
   it('should GET product detail', done => {
@@ -38,6 +38,6 @@ describe('/GET/:productid product data', () => {
       res.should.have.nested.property('body[0].PRODUCT_NAME');
       res.should.have.nested.property('body[0].BOX');
       done();
-    })
-  })
-})
+    });
+  });
+});
