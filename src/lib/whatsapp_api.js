@@ -5,6 +5,7 @@
 import { pool_ecommerce } from '../config/db_config';
 import { Request } from 'mssql';
 import _ from 'lodash';
+import "@babel/polyfill";
 
 class WhatsappApi {
 

@@ -1,7 +1,10 @@
 import _ from 'lodash';
 import redis from 'redis';
 
-const redisClient = redis.createClient(process.env.CACHE_PORT);
+const redisClient = redis.createClient({
+  host: 'redis-server',
+  port: process.env.CACHE_PORT
+});
 
 /**
  * Get result from DB

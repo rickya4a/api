@@ -8,3 +8,4 @@ dist
 .well-known
 .env
 dump.rdb
+docker-compose.yml
