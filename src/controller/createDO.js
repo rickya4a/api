@@ -5,7 +5,9 @@ import _ from 'lodash';
 
 export async function getDataHeader(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('initiateId', VarChar)
   .prepare(`SELECT b.NAMA_STOCKIES,a.ID_STOCKIES, b. ALAMAT_STOCKIES,
   a.ID_WAREHOUSE, c.WAREHOUSE_NAME, a.NAMA, a.ALAMAT1, a.ALAMAT2, a.ALAMAT3
@@ -29,6 +31,7 @@ export async function getDetailProduct(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('initiateId', VarChar)
   .prepare(`SELECT E.PRODUCT_CODE, E.PRODUCT_NAME,
   E.ID_PRODUCT, SUM(b.QTY_SISA) AS QTYDELIVERY
@@ -52,32 +55,7 @@ export async function getDetailProduct(req, res) {
   })
 }
 
-exports.getDetailProduct = (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-
-  pool_whm.then(pool => {
-    pool.request()
-    .input('initiateId', VarChar, req.params.initiate_do_id)
-    .query(`SELECT E.PRODUCT_CODE, E.PRODUCT_NAME,
-      E.ID_PRODUCT, SUM(b.QTY_SISA) AS QTYDELIVERY
-      FROM klink_whm_testing.dbo.T_DETAIL_INITIATE_DO a
-      LEFT join klink_whm_testing.dbo.T_SALESSIMULATION b
-      ON a.ID_KWITANSI = b.KWITANSI_NO
-      LEFT join klink_whm_testing.dbo.MASTER_PRODUK_ALIAS c
-      ON b.PRODUK_ALIAS_ID=c.PRODUK_ALIAS_ID
-      LEFT JOIN klink_whm_testing.dbo.MASTER_PRODUK E
-      ON E.ID_PRODUCT = c.ID_PRODUCT
-      WHERE a.INITIATE_DO_ID = @initiateId AND b.QTY_SISA != 0
-      AND b.IS_INDENT != 1 AND B.IS_BUNDLED = 0
-      GROUP BY E.PRODUCT_CODE, e.PRODUCT_NAME, E.ID_PRODUCT`,
-      (err, result) => {
-      if (err) throw err
-      res.json(result.recordset)
-    })
-  })
-}
-
-exports.getListIndent = (req, res) => {
+export function getListIndent(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -112,7 +90,7 @@ exports.getListIndent = (req, res) => {
   })
 }
 
-exports.getMasterProduct = (req, res) => {
+export function getMasterProduct(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -126,7 +104,7 @@ exports.getMasterProduct = (req, res) => {
   })
 }
 
-exports.checkBox = (req, res) => {
+export function checkBox(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -145,7 +123,7 @@ exports.checkBox = (req, res) => {
   })
 }
 
-exports.checkPcs = (req, res) => {
+export function checkPcs(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -165,7 +143,7 @@ exports.checkPcs = (req, res) => {
   })
 }
 
-exports.processReceiptNo = (req, res) => {
+export function processReceiptNo(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -183,7 +161,7 @@ exports.processReceiptNo = (req, res) => {
   })
 }
 
-exports.updateFlagInitiate = (req, res) => {
+export function updateFlagInitiate(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -197,10 +175,8 @@ exports.updateFlagInitiate = (req, res) => {
   })
 }
 
-exports.processProductSingle = (req, res) => {
+export function processProductSingle(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-
-  console.log(req.params.kw);
 
   pool_whm.then(pool => {
     pool.request()
@@ -218,7 +194,7 @@ exports.processProductSingle = (req, res) => {
   })
 }
 
-exports.upFlagIndentSales = (req, res) => {
+export function upFlagIndentSales(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -234,7 +210,7 @@ exports.upFlagIndentSales = (req, res) => {
   })
 }
 
-exports.updateFlagIndent = (req, res) => {
+export function updateFlagIndent(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -250,7 +226,7 @@ exports.updateFlagIndent = (req, res) => {
   })
 }
 
-exports.checkStockProductBox = (req, res) => {
+export function checkStockProductBox(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -276,7 +252,7 @@ exports.checkStockProductBox = (req, res) => {
   })
 }
 
-exports.updateStock = (req, res) => {
+export function updateStock(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -291,7 +267,7 @@ exports.updateStock = (req, res) => {
   })
 }
 
-exports.updateQtySend = (req, res) => {
+export function updateQtySend(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -309,7 +285,7 @@ exports.updateQtySend = (req, res) => {
   })
 }
 
-exports.checkStockProductPcs = (req, res) => {
+export function checkStockProductPcs(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -335,7 +311,7 @@ exports.checkStockProductPcs = (req, res) => {
   })
 }
 
-exports.checkProductIndent = (req, res) => {
+export function checkProductIndent(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -351,7 +327,7 @@ exports.checkProductIndent = (req, res) => {
   })
 }
 
-exports.addFlagIndentSales = (req, res) => {
+export function addFlagIndentSales(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
@@ -369,7 +345,7 @@ exports.addFlagIndentSales = (req, res) => {
   })
 }
 
-exports.updateBatchStock = (req, res) => {
+export function updateBatchStock(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {

@@ -121,7 +121,7 @@ export async function requestToken() {
   let api = new WhatsappApi;
 
   // Create basic token http authorization
-  let auth = Base64.encode(`${api.interactive_username}:${api.interactive_userpwd}`);
+  let auth = Base64.encode(`${api.interactiveUsername}:${api.interactiveUserpwd}`);
 
   // Make request to Jatis
   const result = await Axios.post(`${api.url}/wa/users/login`, {}, {
@@ -156,6 +156,14 @@ export async function requestToken() {
   });
 
   return newArr;
+}
+
+export function sendMediaWhatsapp(req, res) {
+  const api = new WhatsappApi;
+
+  api.sendMedia(req.params.phoneNumber).then(result => {
+    console.log(result)
+  });
 }
 
 // Dev only

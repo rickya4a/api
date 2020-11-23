@@ -179,4 +179,7 @@ export default (app) => {
 
   app.route('/get-whatsapp-token')
   .get(k_net.getToken)
+
+  app.route('/send-media/:phoneNumber')
+  .get(k_net.sendMediaWhatsapp)
 }

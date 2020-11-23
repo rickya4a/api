@@ -11,10 +11,6 @@ if (process.env.NODE_ENV === 'test') process.env.SERVER_PORT=4567
 app.use(urlencoded({ extended: true }));
 app.use(json());
 app.use(cors());
-app.use('/.well-known',
-  express.static('.well-known'),
-  serveIndex('.well-known')
-);
 app.options('*', cors());
 routes(app);
 
