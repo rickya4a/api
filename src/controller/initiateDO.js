@@ -457,6 +457,24 @@ async function _getWhId(warehousecode) {
 }
 
 /**
+ * Check data is not exists in table T_SALESSIMULATION
+ *
+ * @param   {string}  orderno  Order no
+ *
+ * @return  {Promise<String>}         Return product alias id
+ */
+async function _checkDataSales(orderno) {
+  const pool = await pool_whm_testing;
+
+  const dataAlias = await pool.request()
+                          .input('orderno', orderno)
+                          .query(`SELECT * FROM T_SALESSIMULATION ts WHERE
+                            ts.KWITANSI_NO = @orderno`);
+
+  return dataAlias.recordset;
+}
+
+/**
  * Get sales data
  *
  * @param   {string}  orderno  Order number
@@ -517,6 +535,16 @@ export async function importProduct(req, res) {
   const transaction = new Transaction(await pool_whm_testing);
 
   const request = new Request(transaction);
+
+  // Check sales data
+  const _checkData = await _checkDataSales(req.params.orderno);
+
+  // terminate if data exists
+  if (!_.isEmpty(_checkData))
+    return res.json({
+      status: false,
+      message: 'Sales data already exists'
+    });
 
   transaction.begin(err => {
 
