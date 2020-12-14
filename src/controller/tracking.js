@@ -7,7 +7,6 @@ import { Base64 } from 'js-base64';
 import _ from 'lodash';
 
 export async function index(req, res) { // urutan paramnya harus req, res
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const pool = await pool_mlm;
   pool.request()
   .query('SELECT TOP 100 * FROM bbhdr', (err, result) => {
@@ -25,7 +24,6 @@ export function tracking(req, res) {
   let verify = _verify(token, 'k-tracking');
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
-  res.setHeader('Access-Control-Allow-Origin', '*');
   return pool_whm.then(pool => {
     pool.request()
       .query(`SELECT ID_DO, NO_DO, STATUS,
@@ -50,7 +48,6 @@ export async function getDetail(req, res) {
   let verify = _verify(token, 'k-tracking');
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('noDo', VarChar)
   .input('courier', VarChar)
@@ -88,7 +85,6 @@ export async function findTracking(req, res) {
   let verify = _verify(token, 'k-tracking');
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('noDo', VarChar)
   .prepare(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30),
@@ -113,7 +109,6 @@ export async function insertData(req, res) {
   let verify = _verify(token, 'k-tracking');
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('doId', VarChar)
   .input('noDo', VarChar)
@@ -168,7 +163,6 @@ export async function findCourier(req, res) {
   let password = req.body.password;
   if (req.body.appkey != 'k-tracking')
     return res.status(401).json({ message: 'Unauthorized' });
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('userName', VarChar)
   .input('password', VarChar)
@@ -214,7 +208,6 @@ export async function getTrackingKnetStockis(req, res) {
   /* let token = localStorage.getItem('Authorization');
   if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
   res.setHeader('Authorization', `Bearer ${token}`); */
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_mlm);
   ps.input('trcd', VarChar)
   .prepare(`SELECT TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt,
@@ -285,7 +278,6 @@ export async function getTrackingKnetStockis(req, res) {
  * @return  {obj}       array tracking detail
  */
 export async function getTrackingKnetInv(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('invoiceNo', VarChar)
   .prepare(`SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI,
@@ -350,7 +342,6 @@ export async function getDataCourier(req, res) {
   let verify = _verify(token, 'k-tracking');
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('userName', VarChar)
   .prepare(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE,
@@ -385,7 +376,6 @@ export async function updatePassCourier(req, res) {
   let verify = _verify(token, 'k-tracking');
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
   res.setHeader('Authorization', `Bearer ${token}`);
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('userName', VarChar)
   .input('oldPassword', VarChar)
@@ -425,7 +415,6 @@ export async function updatePassCourier(req, res) {
 
 // get list stockies for form do manual wms (testing)
 export async function stockies(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const pool = await pool_whm;
   pool.request()
   .query(`SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES
@@ -450,7 +439,6 @@ export async function listDO(req, res) {
 
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
 
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('stockistId', VarChar)
   .input('startDate', VarChar)
@@ -496,7 +484,6 @@ export async function getDoByDate(req, res) {
   let token = localStorage.getItem('Authorization');
   let verify = _verify(token, 'k-tracking');
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
-  res.setHeader('Access-Control-Allow-Origin', '*');
   const ps = new PreparedStatement(await pool_whm);
   ps.input('startDate', VarChar)
   .input('endDate', VarChar)
