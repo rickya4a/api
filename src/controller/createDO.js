@@ -1,10 +1,9 @@
 import { pool_whm } from '../config/db_config';
 import { VarChar, PreparedStatement } from 'mssql';
-import helper from '../lib/main';
+import * as helper from '../lib/main';
 import _ from 'lodash';
 
 export async function getDataHeader(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   const ps = new PreparedStatement(await pool_whm);
 
@@ -28,7 +27,6 @@ export async function getDataHeader(req, res) {
 }
 
 export async function getDetailProduct(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   const ps = new PreparedStatement(await pool_whm);
 
@@ -56,7 +54,6 @@ export async function getDetailProduct(req, res) {
 }
 
 export function getListIndent(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -91,7 +88,6 @@ export function getListIndent(req, res) {
 }
 
 export function getMasterProduct(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -105,7 +101,6 @@ export function getMasterProduct(req, res) {
 }
 
 export function checkBox(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -124,7 +119,6 @@ export function checkBox(req, res) {
 }
 
 export function checkPcs(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -144,7 +138,6 @@ export function checkPcs(req, res) {
 }
 
 export function processReceiptNo(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -162,7 +155,6 @@ export function processReceiptNo(req, res) {
 }
 
 export function updateFlagInitiate(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -176,7 +168,6 @@ export function updateFlagInitiate(req, res) {
 }
 
 export function processProductSingle(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -195,7 +186,6 @@ export function processProductSingle(req, res) {
 }
 
 export function upFlagIndentSales(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -211,7 +201,6 @@ export function upFlagIndentSales(req, res) {
 }
 
 export function updateFlagIndent(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -227,7 +216,6 @@ export function updateFlagIndent(req, res) {
 }
 
 export function checkStockProductBox(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -253,7 +241,6 @@ export function checkStockProductBox(req, res) {
 }
 
 export function updateStock(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -268,7 +255,6 @@ export function updateStock(req, res) {
 }
 
 export function updateQtySend(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -286,7 +272,6 @@ export function updateQtySend(req, res) {
 }
 
 export function checkStockProductPcs(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -312,7 +297,6 @@ export function checkStockProductPcs(req, res) {
 }
 
 export function checkProductIndent(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -328,7 +312,6 @@ export function checkProductIndent(req, res) {
 }
 
 export function addFlagIndentSales(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()
@@ -346,7 +329,6 @@ export function addFlagIndentSales(req, res) {
 }
 
 export function updateBatchStock(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
 
   pool_whm.then(pool => {
     pool.request()

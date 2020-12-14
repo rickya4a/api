@@ -1,6 +1,5 @@
 import { pool_ecommerce } from '../config/db_config';
 import { PreparedStatement, VarChar, DateTime, Request } from 'mssql';
-import bcrypt from 'bcrypt';
 import { Base64 } from "js-base64";
 import WhatsappApi from '../lib/whatsapp_api';
 import Axios from 'axios';
@@ -180,7 +179,7 @@ export function sendMediaWhatsapp(req, res) {
  * the input and return boolean value.
  * If it's matched return true and vice-versa
  */
-export async function inputEncrypted(req, res) {
+/* export async function inputEncrypted(req, res) {
   bcrypt.genSalt(12, (err, salt) => {
     if (err) return err
     bcrypt.hash(req.body.password, salt, (err, hash) => {
@@ -199,4 +198,4 @@ export async function compareEncrypted(req, res) {
   if (match) {
     res.send(match)
   }
-}
+} */

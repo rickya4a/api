@@ -23,8 +23,8 @@
   "author": "Ricky Aditya",
   "license": "ISC",
   "dependencies": {
+    "async": "^3.2.0",
     "axios": "^0.19.2",
-    "bcrypt": "^3.0.8",
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.5",
     "cookie-session": "^1.4.0",
@@ -40,7 +40,8 @@
     "passport": "^0.4.1",
     "passport-jwt": "^4.0.0",
     "redis": "^3.0.2",
-    "serve-index": "^1.9.1"
+    "serve-index": "^1.9.1",
+    "uuid": "^8.3.1"
   },
   "devDependencies": {
     "nodemon": "^1.19.4",
