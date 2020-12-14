@@ -1,6 +1,5 @@
 import { pool_ecommerce } from '../config/db_config';
 import { PreparedStatement, VarChar, DateTime, Request } from 'mssql';
-import bcrypt from 'bcrypt';
 import { Base64 } from "js-base64";
 import WhatsappApi from '../lib/whatsapp_api';
 import Axios from 'axios';
@@ -121,7 +120,7 @@ export async function requestToken() {
   let api = new WhatsappApi;
 
   // Create basic token http authorization
-  let auth = Base64.encode(`${api.interactive_username}:${api.interactive_userpwd}`);
+  let auth = Base64.encode(`${api.interactiveUsername}:${api.interactiveUserpwd}`);
 
   // Make request to Jatis
   const result = await Axios.post(`${api.url}/wa/users/login`, {}, {
@@ -158,6 +157,14 @@ export async function requestToken() {
   return newArr;
 }
 
+export function sendMediaWhatsapp(req, res) {
+  const api = new WhatsappApi;
+
+  api.sendMedia(req.params.phoneNumber).then(result => {
+    console.log(result)
+  });
+}
+
 // Dev only
 /**
  * Assume inputEncrypted as registerMember
@@ -172,7 +179,7 @@ export async function requestToken() {
  * the input and return boolean value.
  * If it's matched return true and vice-versa
  */
-export async function inputEncrypted(req, res) {
+/* export async function inputEncrypted(req, res) {
   bcrypt.genSalt(12, (err, salt) => {
     if (err) return err
     bcrypt.hash(req.body.password, salt, (err, hash) => {
@@ -191,4 +198,4 @@ export async function compareEncrypted(req, res) {
   if (match) {
     res.send(match)
   }
-}
+} */

@@ -6,18 +6,20 @@ import { pool_ecommerce } from '../config/db_config';
 import { Request } from 'mssql';
 import _ from 'lodash';
 import "@babel/polyfill";
+import Axios from 'axios';
 
 class WhatsappApi {
 
   constructor() {
-    this.url = 'https://interactive.jatismobile.com'
+    this.url = 'https://interactive.jatismobile.com';
+    this.urlMedia = 'https://interactive.jatismobile.com/v1/messages';
     this.userid = "KLINKWA";
     this.password = "KLINKWA724";
     this.sender = "K-LINK_wa";
     this.division = "IT";
-    this.klink_number = "628111989984";
-    this.interactive_username = "klink";
-    this.interactive_userpwd = "klink876$";
+    this.klinkNumber = "628111989984";
+    this.interactiveUsername = "klink";
+    this.interactiveUserpwd = "klink876$";
    }
 
    /**
@@ -69,7 +71,7 @@ class WhatsappApi {
     return getToken
   }
 
-  salamSehat(phoneNumber) {
+  async sendMedia(phoneNumber) {
     let components = [{
       type: 'header',
       parameters: [
@@ -103,7 +105,21 @@ class WhatsappApi {
       ]
     }];
 
-    return mainData;
+    return await this.getToken().then(result => {
+      if (_.isEmpty(result.recordset)) return JSON.stringify({
+        message: 'Token Invalid'
+      })
+
+      let config = {
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${result.recordset[0].token}`
+        }
+      }
+
+      return Axios.post(this.urlMedia, mainData, config)
+    })
   }
 }
 

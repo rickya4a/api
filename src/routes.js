@@ -164,14 +164,11 @@ export default (app) => {
   app.route('/checkProductIndent/:kw/:produk_alias_id')
     .get(createDO.checkProductIndent)
 
+  app.route('/get-product-alias/:orderno')
+    .get(initiateDO.importProduct)
+
   app.route('/jatis-message')
   .get(k_net.jatisMessage)
-
-  app.route('/input-encrypted')
-  .post(k_net.inputEncrypted)
-
-  app.route('/compare-encrypted')
-  .get(k_net.compareEncrypted)
 
   // Cronjob routes
   app.route('/delete/k-wallet/token')
@@ -179,4 +176,7 @@ export default (app) => {
 
   app.route('/get-whatsapp-token')
   .get(k_net.getToken)
+
+  app.route('/send-media/:phoneNumber')
+  .get(k_net.sendMediaWhatsapp)
 }

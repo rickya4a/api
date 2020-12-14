@@ -12,7 +12,7 @@ const redisClient = redis.createClient(redisOptions);
 /**
  * Get result from DB
  * @param   {any}  params  error and query result
- * @return  {array}          Query result
+ * @return  {void}          Query result
  */
 export function _getResult(...params) {
   if (params[0]) {
@@ -29,7 +29,7 @@ export function _getResult(...params) {
  * @param   {string}  key    Cache key
  * @param   {Object}  value  Data to store to cache
  * @param   {object}  res    Response object
- * @return  {array}         Object data
+ * @return  {void}         Object data
  */
 export function _cachedData(key, value, res) {
   redisClient.get(key, (error, data) => {
