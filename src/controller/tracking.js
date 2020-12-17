@@ -10,7 +10,7 @@ export async function index(_, res) { // urutan paramnya harus req, res
   res.json({
     status: true,
     message: "API service for K-Link, made with 💕 and 🏆",
-    another_message: `Guess what?! This route is just the index for welcoming your, Dear Visitor.`
+    another_message: `Guess what?! This route is just the index for welcoming you, Dear Visitor.`
   })
 }
 
