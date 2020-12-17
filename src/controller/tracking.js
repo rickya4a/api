@@ -6,13 +6,12 @@ import { _setData, _getData, _getResult, _cachedData } from '../lib/main'
 import { Base64 } from 'js-base64';
 import _ from 'lodash';
 
-export async function index(req, res) { // urutan paramnya harus req, res
-  const pool = await pool_mlm;
-  pool.request()
-  .query('SELECT TOP 100 * FROM bbhdr', (err, result) => {
-    if (err) throw err;
-    _cachedData(req.route.path, result.recordset, res);
-  });
+export async function index(_, res) { // urutan paramnya harus req, res
+  res.json({
+    status: true,
+    message: "API service for K-Link, made with 💕 and 🏆",
+    another_message: `Guess what?! This route is just the index for welcoming your, Dear Visitor.`
+  })
 }
 
 /**
