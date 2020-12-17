@@ -6,7 +6,7 @@ import { _setData, _getData, _getResult, _cachedData } from '../lib/main'
 import { Base64 } from 'js-base64';
 import _ from 'lodash';
 
-export async function index(_, res) { // urutan paramnya harus req, res
+export async function index(_, res) {
   res.json({
     status: true,
     message: "API service for K-Link, made with 💕 and 🏆",
