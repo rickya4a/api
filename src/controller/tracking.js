@@ -20,9 +20,13 @@ export async function index(_, res) {
  */
 export function tracking(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   res.setHeader('Authorization', `Bearer ${token}`);
+
   return pool_whm.then(pool => {
     pool.request()
       .query(`SELECT ID_DO, NO_DO, STATUS,
@@ -44,10 +48,15 @@ export function tracking(req, res) {
  */
 export async function getDetail(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   res.setHeader('Authorization', `Bearer ${token}`);
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('noDo', VarChar)
   .input('courier', VarChar)
   .prepare(`SELECT a.ID_DO, a.NO_DO, a.ID_COURIER, a.ID_STOCKIES, a.NAMA,
@@ -81,10 +90,15 @@ export async function getDetail(req, res) {
  */
 export async function findTracking(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   res.setHeader('Authorization', `Bearer ${token}`);
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('noDo', VarChar)
   .prepare(`SELECT NO_DO, STATUS, CONVERT(VARCHAR(30),
     CREATED_DATE, 20) AS CREATED_DATE,
@@ -105,10 +119,15 @@ export async function findTracking(req, res) {
  */
 export async function insertData(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   res.setHeader('Authorization', `Bearer ${token}`);
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('doId', VarChar)
   .input('noDo', VarChar)
   .input('date', VarChar)
@@ -159,10 +178,14 @@ export async function insertData(req, res) {
  */
 export async function findCourier(req, res) {
   let username = req.body.username;
+
   let password = req.body.password;
+
   if (req.body.appkey != 'k-tracking')
     return res.status(401).json({ message: 'Unauthorized' });
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('userName', VarChar)
   .input('password', VarChar)
   .prepare(`SELECT ID_COURIER, USERNAME, PASSWORD,
@@ -181,12 +204,19 @@ export async function findCourier(req, res) {
           password: Base64.encode(result.recordset[0].PASSWORD)
         };
         let kurir = result.recordset[0].PARENT_COURIER;
+
         let username = result.recordset[0].USERNAME;
+
         const token = sign(payload, 'k-tracking');
+
         res.setHeader('Authorization', `Bearer ${token}`);
+
         localStorage.setItem('Authorization', token);
+
         localStorage.setItem('kurir', kurir);
+
         localStorage.setItem('username', username);
+
         res.json({ user: result.recordset, token: token });
       }
       return ps.unprepare();
@@ -208,6 +238,7 @@ export async function getTrackingKnetStockis(req, res) {
   if (!req.headers.authorization) return res.status(401).json({ message: 'Unauthorized'});
   res.setHeader('Authorization', `Bearer ${token}`); */
   const ps = new PreparedStatement(await pool_mlm);
+
   ps.input('trcd', VarChar)
   .prepare(`SELECT TOP 1 a.trcd, a.orderno, a.batchno, a.invoiceno, a.etdt,
     CONVERT(VARCHAR(10), a.batchdt, 120) as batchdt, a.createdt, a.createnm,
@@ -278,6 +309,7 @@ export async function getTrackingKnetStockis(req, res) {
  */
 export async function getTrackingKnetInv(req, res) {
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('invoiceNo', VarChar)
   .prepare(`SELECT a.ID_DO, a.NO_DO, b.NO_KWITANSI,
       c.GDO, c.trtype, d.trcd as cn_no,
@@ -302,6 +334,7 @@ export async function getTrackingKnetInv(req, res) {
         res.send({ header: null, tracking: null });
       } else {
         let id_do = header.recordset[0].ID_DO;
+
         pool_whm.then(pool => {
           pool.request()
           .input('id_do', id_do)
@@ -338,10 +371,15 @@ export async function getTrackingKnetInv(req, res) {
  */
 export async function getDataCourier(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   res.setHeader('Authorization', `Bearer ${token}`);
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('userName', VarChar)
   .prepare(`SELECT a.ID_COURIER, a.USERNAME, a.PASSWORD, a.ID_USERROLE,
     a.PARENT_COURIER, a.NAME, b.NAMA as NAMA_EKSPEDISI
@@ -372,10 +410,15 @@ export async function getDataCourier(req, res) {
  */
 export async function updatePassCourier(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   res.setHeader('Authorization', `Bearer ${token}`);
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('userName', VarChar)
   .input('oldPassword', VarChar)
   .input('newPassword', VarChar)
@@ -413,8 +456,9 @@ export async function updatePassCourier(req, res) {
 }
 
 // get list stockies for form do manual wms (testing)
-export async function stockies(req, res) {
+export async function stockies(_, res) {
   const pool = await pool_whm;
+
   pool.request()
   .query(`SELECT ID_STOCKIES, NAMA_STOCKIES, CODE_STOCKIES
     FROM klink_whm.dbo.MASTER_STOCKIES WHERE IS_ACTIVE = 0
@@ -434,11 +478,13 @@ export async function stockies(req, res) {
  */
 export async function listDO(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
 
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
 
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('stockistId', VarChar)
   .input('startDate', VarChar)
   .input('endDate', VarChar)
@@ -481,9 +527,13 @@ export async function listDO(req, res) {
  */
 export async function getDoByDate(req, res) {
   let token = localStorage.getItem('Authorization');
+
   let verify = _verify(token, 'k-tracking');
+
   if (!verify) return res.status(401).json({ message: 'Unauthorized' });
+
   const ps = new PreparedStatement(await pool_whm);
+
   ps.input('startDate', VarChar)
   .input('endDate', VarChar)
   .input('courierId', VarChar)

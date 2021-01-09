@@ -1,5 +1,5 @@
-import { pool_ecommerce } from '../config/db_config';
-import { PreparedStatement, VarChar, DateTime, Request } from 'mssql';
+import { pool_ecommerce, pool_mlm } from '../config/db_config';
+import { PreparedStatement, VarChar, DateTime, Request, Transaction, Int } from 'mssql';
 import { Base64 } from "js-base64";
 import WhatsappApi from '../lib/whatsapp_api';
 import Axios from 'axios';
@@ -163,6 +163,48 @@ export function sendMediaWhatsapp(req, res) {
   api.sendMedia(req.params.phoneNumber).then(result => {
     console.log(result)
   });
+}
+
+export async function reclarProcedure(req, res) {
+  const transaction = new Transaction(await pool_mlm)
+
+  const request = new Request(transaction)
+
+  transaction.begin(async err => {
+
+    if (err) throw err;
+
+    try {
+      let storedProc = await request.query('EXECUTE SP_RECLAR_JAN21_MANUAL')
+
+      let reclarResult = storedProc.rowsAffected[0]
+
+      if (reclarResult === 1) {
+        request.query(`
+        UPDATE a SET a.claimstatus = '0' , a.claim_date = null , a.loccd = null
+        FROM klink_mlm2010.dbo.tcvoucher a
+        LEFT OUTER JOIN db_ecommerce.dbo.ecomm_trans_hdr b
+          ON (a.temp_trxno COLLATE SQL_Latin1_General_CP1_CI_AS = b.token)
+        WHERE a.VoucherNo LIKE 'REC%' AND a.temp_trxno  is not NULL and b.orderno is null
+        and a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
+        `)
+
+        transaction.commit();
+
+        res.json({
+          status: true,
+          message: 'Stored procedure has been executed'
+        });
+      }
+    } catch (err) {
+      transaction.rollback();
+
+      res.status(500).send({
+        status: false,
+        message: 'Whoops! Something went wrong'
+      });
+    }
+  })
 }
 
 // Dev only

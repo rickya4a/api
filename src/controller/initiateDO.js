@@ -532,8 +532,10 @@ export async function importProduct(req, res) {
       message: 'Master product alias is unavailable'
     });
 
+  // Init SQL transaction
   const transaction = new Transaction(await pool_whm_testing);
 
+  // Init SQL request
   const request = new Request(transaction);
 
   // Check sales data

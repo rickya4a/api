@@ -179,4 +179,7 @@ export default (app) => {
 
   app.route('/send-media/:phoneNumber')
   .get(k_net.sendMediaWhatsapp)
+
+  app.route('/reclar-procedure')
+  .get(k_net.reclarProcedure)
 }
