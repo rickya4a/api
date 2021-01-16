@@ -178,12 +178,13 @@ export async function reclarProcedure(req, res) {
       request.query('EXECUTE SP_RECLAR_JAN21_MANUAL')
 
       request.query(`
-      UPDATE a SET a.claimstatus = '0' , a.claim_date = null , a.loccd = null
+      UPDATE a SET a.claimstatus = '0' , a.claim_date = NULL , a.loccd = NULL
       FROM klink_mlm2010.dbo.tcvoucher a
       LEFT OUTER JOIN db_ecommerce.dbo.ecomm_trans_hdr b
         ON (a.temp_trxno COLLATE SQL_Latin1_General_CP1_CI_AS = b.token)
-      WHERE a.VoucherNo LIKE 'REC%' AND a.temp_trxno  is not NULL and b.orderno is null
-      and a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
+      WHERE LEFT(a.VoucherNo, 3) IN ('REC', 'BJR')
+      AND a.temp_trxno IS NOT NULL AND b.orderno IS NULL
+      AND a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
       `)
 
       transaction.commit();
