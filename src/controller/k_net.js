@@ -175,27 +175,24 @@ export async function reclarProcedure(req, res) {
     if (err) throw err;
 
     try {
-      let storedProc = await request.query('EXECUTE SP_RECLAR_JAN21_MANUAL')
+      request.query('EXECUTE SP_RECLAR_JAN21_MANUAL')
 
-      let reclarResult = storedProc.rowsAffected[0]
+      request.query(`
+      UPDATE a SET a.claimstatus = '0' , a.claim_date = null , a.loccd = null
+      FROM klink_mlm2010.dbo.tcvoucher a
+      LEFT OUTER JOIN db_ecommerce.dbo.ecomm_trans_hdr b
+        ON (a.temp_trxno COLLATE SQL_Latin1_General_CP1_CI_AS = b.token)
+      WHERE a.VoucherNo LIKE 'REC%' AND a.temp_trxno  is not NULL and b.orderno is null
+      and a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
+      `)
 
-      if (reclarResult === 1) {
-        request.query(`
-        UPDATE a SET a.claimstatus = '0' , a.claim_date = null , a.loccd = null
-        FROM klink_mlm2010.dbo.tcvoucher a
-        LEFT OUTER JOIN db_ecommerce.dbo.ecomm_trans_hdr b
-          ON (a.temp_trxno COLLATE SQL_Latin1_General_CP1_CI_AS = b.token)
-        WHERE a.VoucherNo LIKE 'REC%' AND a.temp_trxno  is not NULL and b.orderno is null
-        and a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
-        `)
+      transaction.commit();
 
-        transaction.commit();
+      res.json({
+        status: true,
+        message: 'Stored procedure has been executed'
+      });
 
-        res.json({
-          status: true,
-          message: 'Stored procedure has been executed'
-        });
-      }
     } catch (err) {
       transaction.rollback();
 
