@@ -185,7 +185,7 @@ export async function reclarProcedure(req, res) {
       ON (a.temp_trxno COLLATE SQL_Latin1_General_CP1_CI_AS = b.token)
     WHERE LEFT(a.VoucherNo, 3) IN ('REC', 'BJR')
     AND a.temp_trxno IS NOT NULL AND b.orderno IS NULL
-    AND a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
+    AND a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 12
     `, (err, _) => {
       if (err) {
         if (!rolledBack) {
