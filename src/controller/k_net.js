@@ -175,7 +175,6 @@ export async function reclarProcedure(req, res) {
     if (err) throw err;
 
     try {
-      request.query('EXECUTE SP_RECLAR_JAN21_MANUAL')
 
       request.query(`
       UPDATE a SET a.claimstatus = '0' , a.claim_date = NULL , a.loccd = NULL
