@@ -170,37 +170,41 @@ export async function reclarProcedure(req, res) {
 
   const request = new Request(transaction)
 
-  transaction.begin(async err => {
+  transaction.begin(err => {
 
     if (err) throw err;
 
-    try {
+    let rolledBack = false
 
-      request.query(`
-      UPDATE a SET a.claimstatus = '0' , a.claim_date = NULL , a.loccd = NULL
-      FROM klink_mlm2010.dbo.tcvoucher a
-      LEFT OUTER JOIN db_ecommerce.dbo.ecomm_trans_hdr b
-        ON (a.temp_trxno COLLATE SQL_Latin1_General_CP1_CI_AS = b.token)
-      WHERE LEFT(a.VoucherNo, 3) IN ('REC', 'BJR')
-      AND a.temp_trxno IS NOT NULL AND b.orderno IS NULL
-      AND a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
-      `)
+    transaction.on('rollback', _ => { rolledBack = true })
 
-      transaction.commit();
+    request.query(`
+    UPDATE a SET a.claimstatus = '0' , a.claim_date = NULL , a.loccd = NULL
+    FROM klink_mlm2010.dbo.tcvoucher a
+    LEFT OUTER JOIN db_ecommerce.dbo.ecomm_trans_hdr b
+      ON (a.temp_trxno COLLATE SQL_Latin1_General_CP1_CI_AS = b.token)
+    WHERE LEFT(a.VoucherNo, 3) IN ('REC', 'BJR')
+    AND a.temp_trxno IS NOT NULL AND b.orderno IS NULL
+    AND a.claimstatus = '1' AND DATEDIFF(HOUR, a.claim_date, GETDATE()) >= 5
+    `, (err, _) => {
+      if (err) {
+        if (!rolledBack) {
+          transaction.rollback();
 
-      res.json({
-        status: true,
-        message: 'Stored procedure has been executed'
-      });
+          res.status(500).send({
+            status: false,
+            message: 'Whoops! Something went wrong'
+          });
+        }
+      } else {
+        transaction.commit();
 
-    } catch (err) {
-      transaction.rollback();
-
-      res.status(500).send({
-        status: false,
-        message: 'Whoops! Something went wrong'
-      });
-    }
+        res.json({
+          status: true,
+          message: 'Stored procedure has been executed'
+        });
+      }
+    })
   })
 }
 
